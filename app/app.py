@@ -34,159 +34,326 @@ from exercises import (
 # ─────────────────────────────────────────────
 
 CSS = """
-/* ── Base ─────────────────────────────────────────── */
-body, .gradio-container, .main, footer { background: #0d1117 !important; }
-.gradio-container { max-width: 100% !important; padding: 0 24px !important; }
+/* ══════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES — DARK THEME (default)
+   ══════════════════════════════════════════════ */
+:root {
+  --bg-base:       #0d1117;
+  --bg-surface:    #161b22;
+  --bg-elevated:   #1c2128;
+  --bg-overlay:    #1f2937;
+  --border:        #30363d;
+  --border-muted:  #21262d;
+  --text-primary:  #e6edf3;
+  --text-secondary:#c9d1d9;
+  --text-muted:    #8b949e;
+  --text-faint:    #6e7681;
+  --accent-blue:   #58a6ff;
+  --accent-green:  #3fb950;
+  --accent-purple: #bc8cff;
+  --accent-orange: #ffa657;
+  --accent-red:    #f85149;
+  --btn-primary:   #1f6feb;
+  --btn-hover:     #388bfd;
+  --user-bubble:   #1c3a5e;
+  --bot-bubble:    #161b22;
+  --code-bg:       #161b22;
+  --code-text:     #7ee787;
+}
 
-/* ── Header ───────────────────────────────────────── */
-.app-header { padding: 24px 0 8px 0; border-bottom: 1px solid #21262d; margin-bottom: 16px; }
-.app-header h1 { font-size: 26px !important; font-weight: 700 !important; color: #e6edf3 !important; margin: 0 !important; }
-.app-header p  { color: #8b949e !important; font-size: 14px !important; margin: 4px 0 0 0 !important; }
+/* ── LIGHT THEME ────────────────────────────── */
+[data-theme="light"] {
+  --bg-base:       #ffffff;
+  --bg-surface:    #f6f8fa;
+  --bg-elevated:   #eaeef2;
+  --bg-overlay:    #e1e4e8;
+  --border:        #d0d7de;
+  --border-muted:  #e1e4e8;
+  --text-primary:  #1f2328;
+  --text-secondary:#24292f;
+  --text-muted:    #57606a;
+  --text-faint:    #8c959f;
+  --accent-blue:   #0969da;
+  --accent-green:  #1a7f37;
+  --accent-purple: #8250df;
+  --accent-orange: #bc4c00;
+  --accent-red:    #cf222e;
+  --btn-primary:   #0969da;
+  --btn-hover:     #0550ae;
+  --user-bubble:   #ddf4ff;
+  --bot-bubble:    #f6f8fa;
+  --code-bg:       #f6f8fa;
+  --code-text:     #1a7f37;
+}
 
-/* ── Tabs ─────────────────────────────────────────── */
-.tab-nav { border-bottom: 1px solid #21262d !important; background: transparent !important; }
+/* ── BASE ───────────────────────────────────── */
+html, body, .gradio-container, .main, .wrap {
+  background: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+  font-family: -apple-system, 'Inter', BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+.gradio-container { max-width: 100% !important; padding: 0 20px 40px !important; }
+footer { background: var(--bg-base) !important; }
+
+/* hide Gradio's own footer links */
+footer a, .built-with { display: none !important; }
+
+/* ── TABS ───────────────────────────────────── */
+.tab-nav {
+  border-bottom: 1px solid var(--border-muted) !important;
+  background: transparent !important;
+  gap: 0 !important;
+}
 .tab-nav button {
-    font-size: 13px !important; font-weight: 500 !important;
-    color: #8b949e !important; background: transparent !important;
-    border: none !important; border-bottom: 2px solid transparent !important;
-    padding: 10px 18px !important; margin-bottom: -1px !important;
-    transition: all 0.2s !important;
+  font-size: 13px !important; font-weight: 500 !important;
+  color: var(--text-muted) !important; background: transparent !important;
+  border: none !important; border-bottom: 2px solid transparent !important;
+  padding: 10px 16px !important; transition: all 0.15s !important;
+  border-radius: 0 !important;
 }
-.tab-nav button:hover  { color: #c9d1d9 !important; }
+.tab-nav button:hover { color: var(--text-secondary) !important; background: var(--bg-elevated) !important; }
 .tab-nav button.selected {
-    color: #58a6ff !important;
-    border-bottom: 2px solid #58a6ff !important;
-    background: transparent !important;
+  color: var(--accent-blue) !important;
+  border-bottom: 2px solid var(--accent-blue) !important;
+  font-weight: 600 !important;
 }
 
-/* ── Panel cards ──────────────────────────────────── */
+/* ── PANEL CARDS ────────────────────────────── */
 .panel-card {
-    background: #161b22 !important;
-    border: 1px solid #21262d !important;
-    border-radius: 10px !important;
-    padding: 20px !important;
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-muted) !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  min-height: 500px !important;
+}
+.panel-card:hover { border-color: var(--border) !important; }
+
+/* ── SECTION LABELS ─────────────────────────── */
+.section-label p, .section-label .prose p {
+  font-size: 10px !important; font-weight: 700 !important;
+  letter-spacing: 2px !important; text-transform: uppercase !important;
+  color: var(--accent-blue) !important; margin: 0 0 14px 0 !important;
+  display: flex !important; align-items: center !important; gap: 6px !important;
 }
 
-/* ── Section labels (LEARN / TRY IT LIVE / HOW IT WORKS) ── */
-.section-label .prose p, .section-label p {
-    font-size: 11px !important; font-weight: 700 !important;
-    letter-spacing: 1.5px !important; text-transform: uppercase !important;
-    color: #58a6ff !important; margin: 0 0 12px 0 !important;
+/* ── LEARN PANEL ────────────────────────────── */
+.learn-panel .prose { font-size: 13.5px !important; line-height: 1.75 !important; }
+.learn-panel .prose h2 {
+  color: var(--text-primary) !important; font-size: 15px !important;
+  font-weight: 700 !important; margin: 0 0 6px 0 !important;
+  padding-bottom: 8px !important; border-bottom: 1px solid var(--border-muted) !important;
 }
-
-/* ── Learn panel ──────────────────────────────────── */
-.learn-panel .prose { color: #c9d1d9 !important; font-size: 14px !important; line-height: 1.8 !important; }
-.learn-panel .prose h2 { color: #58a6ff !important; font-size: 16px !important; margin-top: 0 !important; border-bottom: 1px solid #21262d; padding-bottom: 8px; }
-.learn-panel .prose h3 { color: #bc8cff !important; font-size: 14px !important; margin-top: 16px !important; }
-.learn-panel .prose p  { color: #8b949e !important; }
+.learn-panel .prose h3 {
+  color: var(--accent-purple) !important; font-size: 13px !important;
+  font-weight: 600 !important; margin: 16px 0 6px 0 !important;
+}
+.learn-panel .prose p { color: var(--text-secondary) !important; margin: 6px 0 !important; }
+.learn-panel .prose li { color: var(--text-secondary) !important; }
+.learn-panel .prose strong { color: var(--text-primary) !important; font-weight: 600 !important; }
 
 /* inline code */
 .learn-panel .prose code {
-    background: #1f2937 !important; color: #f97316 !important;
-    padding: 2px 6px !important; border-radius: 4px !important;
-    font-family: 'Fira Code', Consolas, monospace !important; font-size: 12px !important;
+  background: var(--code-bg) !important; color: var(--accent-orange) !important;
+  padding: 1px 6px !important; border-radius: 4px !important;
+  font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace !important;
+  font-size: 12px !important; border: 1px solid var(--border-muted) !important;
 }
-
-/* code blocks in Learn */
+/* fenced code blocks */
 .learn-panel .prose pre {
-    background: #0d1117 !important; border: 1px solid #21262d !important;
-    border-radius: 8px !important; padding: 14px !important;
-    overflow-x: auto !important;
+  background: var(--bg-base) !important; border: 1px solid var(--border) !important;
+  border-radius: 8px !important; padding: 14px 16px !important; overflow-x: auto !important;
+  margin: 10px 0 !important;
 }
 .learn-panel .prose pre code {
-    background: transparent !important; color: #7ee787 !important;
-    font-size: 12px !important; padding: 0 !important;
+  background: transparent !important; color: var(--code-text) !important;
+  font-size: 12px !important; padding: 0 !important; border: none !important;
 }
-
 /* tables */
-.learn-panel .prose table { width: 100% !important; border-collapse: collapse !important; font-size: 13px !important; }
-.learn-panel .prose thead tr { background: #1f2937 !important; }
-.learn-panel .prose th { color: #58a6ff !important; padding: 8px 12px !important; text-align: left !important; font-weight: 600 !important; }
-.learn-panel .prose td { color: #8b949e !important; padding: 7px 12px !important; border-top: 1px solid #21262d !important; }
-.learn-panel .prose tr:hover td { background: #1f2937 !important; color: #c9d1d9 !important; }
-
-/* ── Chatbot ───────────────────────────────────────── */
-.chatbot, .chatbot > div, [data-testid="bot"], [data-testid="chatbot"] {
-    background: #0d1117 !important;
-    border: 1px solid #21262d !important;
-    border-radius: 8px !important;
+.learn-panel .prose table { width: 100% !important; border-collapse: collapse !important; font-size: 13px !important; margin: 10px 0 !important; }
+.learn-panel .prose thead tr { background: var(--bg-elevated) !important; }
+.learn-panel .prose th {
+  color: var(--accent-blue) !important; padding: 8px 12px !important;
+  text-align: left !important; font-weight: 600 !important;
+  border-bottom: 1px solid var(--border) !important;
 }
+.learn-panel .prose td {
+  color: var(--text-secondary) !important; padding: 7px 12px !important;
+  border-top: 1px solid var(--border-muted) !important;
+}
+.learn-panel .prose tr:hover td { background: var(--bg-elevated) !important; }
+
+/* ── CHATBOT ─────────────────────────────────── */
+/* outer wrapper — kill the white */
+.chatbot, .chatbot > div, .chatbot > div > div,
+[data-testid="chatbot"], [data-testid="chatbot"] > div,
+.bubble-wrap, .chat-wrap, .messages-wrap {
+  background: var(--bg-base) !important;
+  border: 1px solid var(--border-muted) !important;
+  border-radius: 10px !important;
+}
+/* empty state text */
+.chatbot .empty { color: var(--text-faint) !important; }
+/* message rows */
+.chatbot .message { background: transparent !important; }
 /* user bubble */
-.chatbot .message-wrap .user {
-    background: #1c3a5e !important; color: #cae8ff !important;
-    border-radius: 12px 12px 2px 12px !important;
-    border: 1px solid #1f4e8c !important; padding: 10px 14px !important;
+.chatbot .user, .chatbot .human,
+.chatbot [data-testid="user"],
+.chatbot .message-wrap > div:first-child {
+  background: var(--user-bubble) !important;
+  color: var(--text-primary) !important;
+  border-radius: 16px 16px 4px 16px !important;
+  border: 1px solid var(--accent-blue) !important;
+  padding: 10px 14px !important; max-width: 85% !important;
+  margin-left: auto !important;
 }
 /* bot bubble */
-.chatbot .message-wrap .bot,
-.chatbot .message-wrap .assistant {
-    background: #1a2332 !important; color: #c9d1d9 !important;
-    border-radius: 12px 12px 12px 2px !important;
-    border: 1px solid #21262d !important; padding: 10px 14px !important;
+.chatbot .bot, .chatbot .assistant,
+.chatbot [data-testid="bot"],
+.chatbot .message-wrap > div:last-child {
+  background: var(--bot-bubble) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 16px 16px 16px 4px !important;
+  border: 1px solid var(--border) !important;
+  padding: 10px 14px !important; max-width: 85% !important;
 }
 
-/* ── Input box ────────────────────────────────────── */
-textarea, input[type="text"] {
-    background: #161b22 !important; color: #e6edf3 !important;
-    border: 1px solid #30363d !important; border-radius: 8px !important;
-    font-size: 14px !important;
+/* ── INPUTS ──────────────────────────────────── */
+.gradio-textbox textarea, .gradio-textbox input,
+textarea, input[type="text"], input[type="search"] {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important; font-size: 14px !important;
+  transition: border-color 0.15s, box-shadow 0.15s !important;
 }
-textarea:focus, input[type="text"]:focus {
-    border-color: #58a6ff !important; outline: none !important;
-    box-shadow: 0 0 0 3px rgba(88,166,255,0.1) !important;
+textarea:focus, input:focus {
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 3px rgba(88,166,255,0.12) !important;
+  outline: none !important;
 }
-textarea::placeholder, input::placeholder { color: #484f58 !important; }
+textarea::placeholder, input::placeholder { color: var(--text-faint) !important; }
 
-/* ── Buttons ──────────────────────────────────────── */
+/* hide "Textbox" label on latency boxes */
+.latency-box label span, .latency-box .label-wrap { display: none !important; }
+.latency-box textarea {
+  background: var(--bg-base) !important;
+  color: var(--accent-green) !important;
+  border: 1px solid var(--border-muted) !important;
+  border-radius: 8px !important; font-size: 12px !important;
+  font-weight: 600 !important; text-align: center !important;
+  padding: 6px !important;
+}
+
+/* ── BUTTONS ─────────────────────────────────── */
 button.primary, .send-btn {
-    background: #1f6feb !important; color: #ffffff !important;
-    border: none !important; border-radius: 8px !important;
-    font-weight: 600 !important; font-size: 13px !important;
-    padding: 8px 20px !important; transition: background 0.2s !important;
+  background: var(--btn-primary) !important; color: #fff !important;
+  border: none !important; border-radius: 8px !important;
+  font-weight: 600 !important; font-size: 13px !important;
+  padding: 8px 22px !important; transition: background 0.15s, transform 0.1s !important;
+  cursor: pointer !important;
 }
-button.primary:hover, .send-btn:hover { background: #388bfd !important; }
+button.primary:hover  { background: var(--btn-hover) !important; }
+button.primary:active { transform: scale(0.97) !important; }
 button.secondary {
-    background: #21262d !important; color: #8b949e !important;
-    border: 1px solid #30363d !important; border-radius: 8px !important;
+  background: var(--bg-elevated) !important; color: var(--text-muted) !important;
+  border: 1px solid var(--border) !important; border-radius: 8px !important;
+  font-size: 13px !important; transition: all 0.15s !important;
 }
-button.secondary:hover { background: #30363d !important; color: #c9d1d9 !important; }
+button.secondary:hover { background: var(--bg-overlay) !important; color: var(--text-primary) !important; }
 
-/* ── Flow / How It Works panel ────────────────────── */
+/* Theme toggle buttons */
+.theme-btn {
+  background: var(--bg-elevated) !important; color: var(--text-muted) !important;
+  border: 1px solid var(--border-muted) !important; border-radius: 20px !important;
+  font-size: 12px !important; font-weight: 500 !important;
+  padding: 4px 14px !important; cursor: pointer !important;
+  transition: all 0.15s !important;
+}
+.theme-btn:hover, .theme-btn.active {
+  background: var(--accent-blue) !important; color: #fff !important;
+  border-color: var(--accent-blue) !important;
+}
+
+/* ── HOW IT WORKS — FLOW BOX ─────────────────── */
+.flow-box, .flow-box > div { background: var(--bg-base) !important; }
 .flow-box .prose {
-    font-family: 'Fira Code', Consolas, monospace !important;
-    font-size: 12.5px !important; line-height: 1.75 !important;
-    color: #7ee787 !important;
+  font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace !important;
+  font-size: 12px !important; line-height: 1.8 !important;
 }
+.flow-box .prose p   { color: var(--text-muted) !important; margin: 4px 0 !important; }
 .flow-box .prose code, .flow-box .prose pre {
-    background: #0d1117 !important; color: #7ee787 !important;
-    border: 1px solid #21262d !important; border-radius: 6px !important;
+  background: var(--bg-base) !important; color: var(--code-text) !important;
+  border: 1px solid var(--border-muted) !important; border-radius: 6px !important;
+  font-size: 12px !important;
 }
-.flow-box .prose strong { color: #ffa657 !important; }
-.flow-box .prose em     { color: #bc8cff !important; }
-.flow-box .prose p      { color: #8b949e !important; }
-.flow-box .prose hr     { border-color: #21262d !important; }
+.flow-box .prose strong { color: var(--accent-orange) !important; }
+.flow-box .prose em     { color: var(--accent-purple) !important; font-style: normal !important; }
+.flow-box .prose del    { color: var(--text-faint) !important; }
+.flow-box .prose hr     { border-color: var(--border-muted) !important; margin: 8px 0 !important; }
 
-/* ── Latency / info badges ────────────────────────── */
-.latency-box textarea, .latency-box input {
-    background: #161b22 !important; border: 1px solid #21262d !important;
-    color: #3fb950 !important; font-size: 12px !important;
-    font-weight: 600 !important; text-align: center !important;
-    border-radius: 6px !important;
+/* ── ACCORDION ───────────────────────────────── */
+details, .accordion {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-muted) !important;
+  border-radius: 8px !important;
+}
+details summary, .accordion summary {
+  color: var(--text-muted) !important; font-size: 13px !important;
+  padding: 8px 12px !important; cursor: pointer !important;
+}
+details summary:hover { color: var(--text-primary) !important; }
+
+/* ── JSON VIEWER ─────────────────────────────── */
+.json-holder, .json-holder * {
+  background: var(--bg-base) !important; color: var(--code-text) !important;
+  border-radius: 8px !important; font-size: 12px !important;
 }
 
-/* ── Accordion ────────────────────────────────────── */
-.gr-accordion { background: #161b22 !important; border: 1px solid #21262d !important; border-radius: 8px !important; }
-.gr-accordion summary { color: #8b949e !important; font-size: 13px !important; }
+/* ── SCROLLBARS ──────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
-/* ── JSON viewer ──────────────────────────────────── */
-.json-holder { background: #0d1117 !important; color: #7ee787 !important; border-radius: 8px !important; }
-
-/* ── Scrollbars ───────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0d1117; }
-::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #484f58; }
+/* ── MISC GRADIO OVERRIDES ───────────────────── */
+.gradio-container .prose { color: var(--text-secondary) !important; }
+.label-wrap span { color: var(--text-muted) !important; font-size: 12px !important; }
+.block { background: var(--bg-surface) !important; border-color: var(--border-muted) !important; }
 """
+
+THEME_JS = """
+function() {
+  // Apply saved theme on load
+  const saved = localStorage.getItem('ai-agent-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+
+  // Theme switcher click handler (delegated)
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-theme-set]');
+    if (!btn) return;
+    const theme = btn.getAttribute('data-theme-set');
+
+    if (theme === 'system') {
+      const sys = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', sys);
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    localStorage.setItem('ai-agent-theme', theme);
+
+    // Update active button style
+    document.querySelectorAll('[data-theme-set]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+
+  // Mark the saved button as active after a short delay (DOM may not be ready)
+  setTimeout(() => {
+    const btn = document.querySelector('[data-theme-set="' + saved + '"]');
+    if (btn) btn.classList.add('active');
+  }, 200);
+}
+"""
+
 
 # ─────────────────────────────────────────────
 # FLOW ANIMATION HELPER
@@ -702,21 +869,41 @@ def build_ex08_tab():
 def build_app():
     with gr.Blocks(title="AI Agent Learning Platform") as app:
 
+        # Theme initialiser — runs on page load
+        gr.HTML(f"<script>({THEME_JS})()</script>")
+
         gr.HTML("""
-<div style="padding:24px 0 16px 0; border-bottom:1px solid #21262d; margin-bottom:8px;">
-  <div style="display:flex; align-items:center; gap:12px;">
-    <span style="font-size:32px;">🤖</span>
-    <div>
-      <h1 style="margin:0; font-size:24px; font-weight:700; color:#e6edf3;">AI Agent Learning Platform</h1>
-      <p style="margin:4px 0 0 0; font-size:14px; color:#8b949e;">
-        Learn AI Agents from scratch — one concept per tab &nbsp;·&nbsp; Try each agent live &nbsp;·&nbsp; Watch animated flows
-      </p>
+<div style="padding:20px 0 14px 0; border-bottom:1px solid var(--border-muted); margin-bottom:4px;">
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+
+    <div style="display:flex; align-items:center; gap:14px;">
+      <span style="font-size:36px; line-height:1;">🤖</span>
+      <div>
+        <h1 style="margin:0; font-size:22px; font-weight:700; color:var(--text-primary); letter-spacing:-0.3px;">
+          AI Agent Learning Platform
+        </h1>
+        <p style="margin:3px 0 0 0; font-size:13px; color:var(--text-muted);">
+          Learn AI Agents from scratch &nbsp;·&nbsp; One concept per tab &nbsp;·&nbsp; Try live &nbsp;·&nbsp; Watch animated flows
+        </p>
+      </div>
     </div>
+
+    <!-- Theme switcher -->
+    <div style="display:flex; align-items:center; gap:6px; padding:4px 6px; background:var(--bg-elevated); border:1px solid var(--border-muted); border-radius:24px;">
+      <span style="font-size:11px; color:var(--text-faint); padding:0 4px; font-weight:600; letter-spacing:1px; text-transform:uppercase;">Theme</span>
+      <button class="theme-btn" data-theme-set="dark"   onclick="void(0)">🌙 Dark</button>
+      <button class="theme-btn" data-theme-set="light"  onclick="void(0)">☀️ Light</button>
+      <button class="theme-btn" data-theme-set="system" onclick="void(0)">💻 System</button>
+    </div>
+
   </div>
-  <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
-    <span style="background:#1f2937; color:#58a6ff; border:1px solid #1f4e8c; border-radius:20px; padding:3px 12px; font-size:12px; font-weight:600;">8 Exercises</span>
-    <span style="background:#1f2937; color:#3fb950; border:1px solid #1a4731; border-radius:20px; padding:3px 12px; font-size:12px; font-weight:600;">Simple → RAG</span>
-    <span style="background:#1f2937; color:#bc8cff; border:1px solid #3d2060; border-radius:20px; padding:3px 12px; font-size:12px; font-weight:600;">Live Chat + Animations</span>
+
+  <!-- Badges -->
+  <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+    <span style="background:var(--bg-elevated); color:var(--accent-blue); border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">📚 8 Exercises</span>
+    <span style="background:var(--bg-elevated); color:var(--accent-green); border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">🚀 Simple → RAG</span>
+    <span style="background:var(--bg-elevated); color:var(--accent-purple); border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">⚡ Live Chat</span>
+    <span style="background:var(--bg-elevated); color:var(--accent-orange); border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">🔄 Animated Flows</span>
   </div>
 </div>
 """)
@@ -740,9 +927,11 @@ def build_app():
                 build_ex08_tab()
 
         gr.HTML("""
-<div style="text-align:center; color:#484f58; font-size:12px; padding:16px 0; border-top:1px solid #21262d; margin-top:8px;">
-  AI Agent Learning Series &nbsp;·&nbsp; 8 exercises from Simple → RAG &nbsp;·&nbsp;
-  <a href="https://github.com/skalmodiya/ai-agent-learning" style="color:#58a6ff; text-decoration:none;">GitHub ↗</a>
+<div style="text-align:center; color:var(--text-faint); font-size:12px; padding:20px 0 8px 0; border-top:1px solid var(--border-muted); margin-top:16px;">
+  AI Agent Learning Series &nbsp;·&nbsp; 8 exercises: Simple → Memory → Tools → ReAct → Multi-Agent → Streaming → Structured → RAG &nbsp;·&nbsp;
+  <a href="https://github.com/skalmodiya/ai-agent-learning" style="color:var(--accent-blue); text-decoration:none; font-weight:600;">
+    GitHub ↗
+  </a>
 </div>
 """)
 
