@@ -82,20 +82,24 @@ CSS = """
 /* Gradio dropdown/select/input Svelte components read THESE vars, not ours.      */
 /* Without overriding them the popup always renders with Gradio's white defaults. */
 :root {
-  --background-fill-primary:   #1c2333;
-  --background-fill-secondary: #21293a;
-  --body-text-color:           #f0f6fc;
-  --body-text-color-subdued:   #a0b3c8;
-  --input-background-fill:     #10161f;
-  --border-color-primary:      #30404f;
-  --input-border-color-focus:  #4d90fe;
-  --color-accent:              #79b8ff;
-  --shadow-drop:               0 4px 20px rgba(0,0,0,0.6);
-  --block-background-fill:     #1c2333;
-  --block-border-color:        #30404f;
-  --block-label-text-color:    #a0b3c8;
-  --panel-background-fill:     #161b22;
-  --checkbox-background-color: #10161f;
+  --background-fill-primary:      #1c2333;
+  --background-fill-secondary:    #21293a;
+  --body-text-color:               #f0f6fc;
+  --body-text-color-subdued:       #a0b3c8;
+  --input-background-fill:         #10161f;
+  --border-color-primary:          #30404f;
+  --input-border-color-focus:      #4d90fe;
+  --color-accent:                  #79b8ff;
+  /* User message bubble — Gradio uses --color-accent-soft as bg */
+  --color-accent-soft:             #1c3d6e;
+  --border-color-accent-subdued:   #2d5a9e;
+  --border-color-accent:           #4d90fe;
+  --shadow-drop:                   0 4px 20px rgba(0,0,0,0.6);
+  --block-background-fill:         #1c2333;
+  --block-border-color:            #30404f;
+  --block-label-text-color:        #a0b3c8;
+  --panel-background-fill:         #161b22;
+  --checkbox-background-color:     #10161f;
 }
 
 /* ── LIGHT THEME ────────────────────────────── */
@@ -132,20 +136,23 @@ CSS = """
   --shadow-card:    0 2px 10px rgba(0,0,0,0.08);
   --shadow-btn:     0 2px 6px rgba(9,105,218,0.25);
   /* Gradio internal vars — light overrides */
-  --background-fill-primary:   #ffffff;
-  --background-fill-secondary: #eaeef2;
-  --body-text-color:           #1f2328;
-  --body-text-color-subdued:   #57606a;
-  --input-background-fill:     #ffffff;
-  --border-color-primary:      #d0d7de;
-  --input-border-color-focus:  #0969da;
-  --color-accent:              #0550ae;
-  --shadow-drop:               0 2px 10px rgba(0,0,0,0.12);
-  --block-background-fill:     #ffffff;
-  --block-border-color:        #d0d7de;
-  --block-label-text-color:    #57606a;
-  --panel-background-fill:     #f6f8fa;
-  --checkbox-background-color: #ffffff;
+  --background-fill-primary:      #ffffff;
+  --background-fill-secondary:    #eaeef2;
+  --body-text-color:               #1f2328;
+  --body-text-color-subdued:       #57606a;
+  --input-background-fill:         #ffffff;
+  --border-color-primary:          #d0d7de;
+  --input-border-color-focus:      #0969da;
+  --color-accent:                  #0550ae;
+  --color-accent-soft:             #ddf4ff;
+  --border-color-accent-subdued:   #54aeff;
+  --border-color-accent:           #0969da;
+  --shadow-drop:                   0 2px 10px rgba(0,0,0,0.12);
+  --block-background-fill:         #ffffff;
+  --block-border-color:            #d0d7de;
+  --block-label-text-color:        #57606a;
+  --panel-background-fill:         #f6f8fa;
+  --checkbox-background-color:     #ffffff;
 }
 
 /* ══════════════════════════════════════════════
@@ -345,6 +352,16 @@ p, span, li, td, th, label, div, h1, h2, h3, h4 {
 /* override any white background that Gradio sets on message content */
 .chatbot .message-wrap, .chatbot .message-wrap > div,
 .chatbot .bubble-wrap > div { background: transparent !important; }
+/* Force user bubble dark — Gradio svelte scoped selector */
+.bubble.user-row, .user-row.bubble,
+.message-bubble-border.user { background-color: #1c3d6e !important; color: #f0f6fc !important; }
+.message-bubble-border.user *, .bubble.user-row * { color: #f0f6fc !important; }
+/* Light theme user bubble */
+[data-theme="light"] .bubble.user-row,
+[data-theme="light"] .user-row.bubble,
+[data-theme="light"] .message-bubble-border.user { background-color: #ddf4ff !important; color: #1f2328 !important; }
+[data-theme="light"] .message-bubble-border.user *,
+[data-theme="light"] .bubble.user-row * { color: #1f2328 !important; }
 
 /* ══════════════════════════════════════════════
    INPUTS & TEXTAREAS
