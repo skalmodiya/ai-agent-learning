@@ -14,24 +14,125 @@ An AI Agent is a program that:
 This exercise covers the absolute basics — one message, one response.
 """
 
-import requests  # Used to make HTTP calls to the AI API
-import json      # Used to format data as JSON (the language APIs speak)
+import sys
+import os
+import textwrap
+import requests
+
+# Force UTF-8 output on Windows so box-drawing characters render correctly.
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+# ─────────────────────────────────────────────
+# VENV GUARD
+# Refuse to run outside a virtual environment.
+# This prevents polluting your global Python installation
+# and ensures every exercise is fully isolated.
+# ─────────────────────────────────────────────
+
+def _check_venv():
+    inside_venv = (
+        hasattr(sys, "real_prefix")                        # virtualenv
+        or (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix)  # venv
+    )
+    if not inside_venv:
+        print()
+        print("  ERROR: No virtual environment detected.")
+        print()
+        print("  Please create and activate one first:")
+        print()
+        print("    python -m venv venv")
+        print()
+        print("    # On Windows:")
+        print("    venv\\Scripts\\activate")
+        print()
+        print("    # On Mac/Linux:")
+        print("    source venv/bin/activate")
+        print()
+        print("  Then install dependencies:")
+        print("    pip install -r requirements.txt")
+        print()
+        sys.exit(1)
+
+_check_venv()
+
 
 # ─────────────────────────────────────────────
 # CONFIGURATION
-# These are the settings your agent needs to talk to the AI.
 # ─────────────────────────────────────────────
 
-API_KEY  = "a6eb413e-5c42-4420-87c0-f59b2a4e5a84"  # Your identity to the API
-BASE_URL = "http://localhost:6655/anthropic/v1"     # Where to send requests
-MODEL    = "claude-sonnet-4-6"                      # Which AI model to use
+API_KEY  = "a6eb413e-5c42-4420-87c0-f59b2a4e5a84"
+BASE_URL = "http://localhost:6655/anthropic/v1"
+MODEL    = "claude-sonnet-4-6"
 
-# HTTP headers tell the server who you are and what format you're sending.
 HEADERS = {
-    "x-api-key":    API_KEY,         # Authentication
-    "content-type": "application/json",  # We're sending JSON data
-    "anthropic-version": "2023-06-01",   # Required by Anthropic API
+    "x-api-key":         API_KEY,
+    "content-type":      "application/json",
+    "anthropic-version": "2023-06-01",
 }
+
+# Terminal width used for wrapping and borders
+try:
+    TERM_WIDTH = min(os.get_terminal_size().columns, 80)
+except OSError:
+    TERM_WIDTH = 80
+
+
+# ─────────────────────────────────────────────
+# DISPLAY HELPERS
+# These functions handle all the formatting so main() stays clean.
+# ─────────────────────────────────────────────
+
+def print_banner():
+    """Print the welcome banner."""
+    border = "─" * TERM_WIDTH
+    print()
+    print(border)
+    print("  Exercise 01 — Simple AI Agent".center(TERM_WIDTH))
+    print("  One message. One response. The foundation of every agent.".center(TERM_WIDTH))
+    print(border)
+    print(f"  Model : {MODEL}")
+    print(f"  Type  : your message and press Enter")
+    print(f"  Quit  : type 'quit' or press Ctrl+C")
+    print(border)
+    print()
+
+
+def print_user(text: str):
+    """Print the user's message with a label."""
+    print()
+    print("  You")
+    print("  " + "┄" * (TERM_WIDTH - 4))
+    # Wrap long lines so they stay inside the terminal width
+    for line in textwrap.wrap(text, width=TERM_WIDTH - 4) or [text]:
+        print(f"  {line}")
+    print()
+
+
+def print_agent(text: str):
+    """Print the agent's reply in a clearly distinct box."""
+    border = "─" * TERM_WIDTH
+    print(border)
+    print("  Agent")
+    print("  " + "┄" * (TERM_WIDTH - 4))
+    # Preserve paragraph breaks while wrapping each paragraph
+    paragraphs = text.strip().split("\n")
+    for para in paragraphs:
+        if para.strip() == "":
+            print()
+        else:
+            for line in textwrap.wrap(para, width=TERM_WIDTH - 4) or [para]:
+                print(f"  {line}")
+    print(border)
+    print()
+
+
+def print_error(message: str):
+    """Print an error in a way that stands out."""
+    print()
+    print("  ✖  ERROR")
+    print(f"  {message}")
+    print()
 
 
 # ─────────────────────────────────────────────
@@ -43,93 +144,77 @@ def ask_agent(user_message: str) -> str:
     """
     Send a message to the AI and return its reply.
 
-    Parameters:
-        user_message: The text the user wants to send to the AI.
+    The Anthropic API expects:
+      POST /messages
+      {
+        "model": "...",
+        "max_tokens": 1024,
+        "messages": [{ "role": "user", "content": "..." }]
+      }
 
-    Returns:
-        The AI's response as a plain string.
+    It responds with:
+      { "content": [{ "type": "text", "text": "..." }] }
     """
 
-    # ── Step 1: Build the request payload ──
-    # The Anthropic API expects a specific JSON structure.
-    # "messages" is a list — each item has a "role" and "content".
-    # Roles:
-    #   "user"      → the human speaking
-    #   "assistant" → the AI speaking (used when building conversation history)
     payload = {
         "model":      MODEL,
-        "max_tokens": 1024,  # Maximum words the AI can reply with
+        "max_tokens": 1024,
         "messages": [
-            {
-                "role":    "user",
-                "content": user_message,
-            }
+            {"role": "user", "content": user_message}
         ],
     }
 
-    # ── Step 2: Send the request to the API ──
-    # We use HTTP POST because we're sending data (our message) to the server.
-    # Think of it like submitting a form on a website.
     response = requests.post(
-        url=f"{BASE_URL}/messages",  # The endpoint that handles chat
+        url=f"{BASE_URL}/messages",
         headers=HEADERS,
-        json=payload,                # requests will serialize this to JSON
+        json=payload,
     )
-
-    # ── Step 3: Handle errors ──
-    # If the server returns an error (4xx/5xx status), raise an exception
-    # so we don't silently swallow failures.
     response.raise_for_status()
 
-    # ── Step 4: Extract the AI's reply ──
-    # The response is JSON. Parse it and dig out the text content.
-    # Response structure:
-    #   {
-    #     "content": [
-    #       { "type": "text", "text": "Hello! ..." }
-    #     ],
-    #     ...
-    #   }
     data = response.json()
     return data["content"][0]["text"]
 
 
 # ─────────────────────────────────────────────
 # MAIN PROGRAM
-# This is what runs when you execute: python agent.py
 # ─────────────────────────────────────────────
 
 def main():
-    print("=" * 50)
-    print("  Exercise 01 — Simple AI Agent")
-    print("  Type 'quit' to exit")
-    print("=" * 50)
-    print()
+    print_banner()
 
-    # A simple loop: keep asking questions until the user types 'quit'
-    while True:
-        user_input = input("You: ").strip()
+    try:
+        while True:
+            user_input = input("  › ").strip()  # › is the input prompt character
 
-        # Guard against empty input
-        if not user_input:
-            continue
+            if not user_input:
+                continue
 
-        # Exit condition
-        if user_input.lower() == "quit":
-            print("Goodbye!")
-            break
+            if user_input.lower() in ("quit", "exit", "q"):
+                print()
+                print("  Goodbye!".center(TERM_WIDTH))
+                print()
+                break
 
-        # Call the agent and print its reply
-        print("Agent: ", end="", flush=True)  # Print on same line, no newline yet
-        reply = ask_agent(user_input)
-        print(reply)
-        print()  # Blank line for readability
+            print_user(user_input)
+
+            try:
+                reply = ask_agent(user_input)
+                print_agent(reply)
+            except requests.exceptions.ConnectionError:
+                print_error("Cannot reach the API. Is the proxy running on localhost:6655?")
+            except requests.exceptions.HTTPError as e:
+                print_error(f"API returned an error: {e}")
+
+    except KeyboardInterrupt:
+        # Ctrl+C exits gracefully instead of showing a traceback
+        print()
+        print()
+        print("  Interrupted. Goodbye!")
+        print()
 
 
 # ─────────────────────────────────────────────
 # ENTRY POINT
-# Python convention: only run main() when this file is executed directly,
-# not when it's imported as a module by another file.
 # ─────────────────────────────────────────────
 
 if __name__ == "__main__":

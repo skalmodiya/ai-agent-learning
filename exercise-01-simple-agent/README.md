@@ -42,15 +42,30 @@ exercise-01-simple-agent/
 
 ## How to Run
 
+Always use a virtual environment — this keeps dependencies isolated per exercise
+and prevents conflicts with your global Python installation.
+
 ```bash
-# 1. Install dependencies
+# 1. Create a virtual environment (only needed once)
+python -m venv venv
+
+# 2. Activate it
+#    Windows:
+venv\Scripts\activate
+#    Mac / Linux:
+source venv/bin/activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run the agent
+# 4. Run the agent
 python agent.py
 ```
 
-Then just type any message and press Enter. Type `quit` to exit.
+The agent will refuse to start if no virtual environment is active —
+this is intentional so you never accidentally run it in the wrong environment.
+
+Type any message and press Enter. Type `quit` or press `Ctrl+C` to exit.
 
 ---
 
