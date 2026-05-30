@@ -7,16 +7,8 @@ so you can parse and use the data programmatically.
 import requests
 import time
 import json
+from . import config
 
-API_KEY  = "a6eb413e-5c42-4420-87c0-f59b2a4e5a84"
-BASE_URL = "http://localhost:6655/anthropic/v1"
-MODEL    = "claude-sonnet-4-6"
-
-HEADERS = {
-    "x-api-key":         API_KEY,
-    "content-type":      "application/json",
-    "anthropic-version": "2023-06-01",
-}
 
 CONCEPT = """
 ## Exercise 07 — Structured Output
@@ -95,19 +87,27 @@ SYSTEM_PROMPT = (
 )
 
 
-def run(user_message: str) -> dict:
+def run(user_message: str, cfg: dict = None) -> dict:
     """Analyze text and return structured JSON output."""
-    payload = {
-        "model":       MODEL,
-        "max_tokens":  1024,
-        "system":      SYSTEM_PROMPT,
-        "tools":       [SCHEMA_TOOL],
-        "tool_choice": {"type": "tool", "name": "save_analysis"},  # force tool call
-        "messages":    [{"role": "user", "content": user_message}],
-    }
+    cfg     = cfg or {}
+    pid     = cfg.get("provider_id", config.DEFAULT_PROVIDER)
+    model   = cfg.get("model",       config.get_default_model(pid))
+    api_key = cfg.get("api_key",     "")
+    headers = config.make_headers(pid, api_key)
+    url     = config.get_chat_url(pid, model)
+
+    payload = config.build_payload(
+        pid, model,
+        [{"role": "user", "content": user_message}],
+        system=SYSTEM_PROMPT,
+        tools=[SCHEMA_TOOL],
+    )
+    # Force the tool call (Anthropic-specific — ignored gracefully by others)
+    if pid == "anthropic":
+        payload["tool_choice"] = {"type": "tool", "name": "save_analysis"}
 
     t0 = time.time()
-    response = requests.post(f"{BASE_URL}/messages", headers=HEADERS, json=payload)
+    response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
     elapsed = round(time.time() - t0, 2)
 

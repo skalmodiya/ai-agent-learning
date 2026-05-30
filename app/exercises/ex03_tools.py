@@ -8,16 +8,7 @@ import requests
 import time
 import json
 import math
-
-API_KEY  = "a6eb413e-5c42-4420-87c0-f59b2a4e5a84"
-BASE_URL = "http://localhost:6655/anthropic/v1"
-MODEL    = "claude-sonnet-4-6"
-
-HEADERS = {
-    "x-api-key":         API_KEY,
-    "content-type":      "application/json",
-    "anthropic-version": "2023-06-01",
-}
+from . import config
 
 CONCEPT = """
 ## Exercise 03 — Tool Use
@@ -136,26 +127,28 @@ TOOL_DEFINITIONS = [
 TOOL_MAP = {"calculator": calculator, "get_weather": get_weather}
 
 
-def run(user_message: str, history: list) -> dict:
+def run(user_message: str, history: list, cfg: dict = None) -> dict:
     """
     Agentic loop: keep calling the API until stop_reason == 'end_turn'.
     Handles tool_use responses by executing the tool locally.
     """
-    messages = history + [{"role": "user", "content": user_message}]
+    cfg      = cfg or {}
+    pid      = cfg.get("provider_id", config.DEFAULT_PROVIDER)
+    model    = cfg.get("model",       config.get_default_model(pid))
+    api_key  = cfg.get("api_key",     "")
+    headers  = config.make_headers(pid, api_key)
+    url      = config.get_chat_url(pid, model)
+
+    messages       = history + [{"role": "user", "content": user_message}]
     tool_calls_log = []
-    all_requests = []
-    t0 = time.time()
+    all_requests   = []
+    t0             = time.time()
 
     while True:
-        payload = {
-            "model":      MODEL,
-            "max_tokens": 1024,
-            "tools":      TOOL_DEFINITIONS,
-            "messages":   messages,
-        }
+        payload = config.build_payload(pid, model, messages, tools=TOOL_DEFINITIONS)
         all_requests.append(payload)
 
-        response = requests.post(f"{BASE_URL}/messages", headers=HEADERS, json=payload)
+        response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         data = response.json()
 

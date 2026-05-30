@@ -5,16 +5,7 @@ Core logic: one message in, one reply out. No history, no persona.
 
 import requests
 import time
-
-API_KEY  = "a6eb413e-5c42-4420-87c0-f59b2a4e5a84"
-BASE_URL = "http://localhost:6655/anthropic/v1"
-MODEL    = "claude-sonnet-4-6"
-
-HEADERS = {
-    "x-api-key":         API_KEY,
-    "content-type":      "application/json",
-    "anthropic-version": "2023-06-01",
-}
+from . import config
 
 CONCEPT = """
 ## Exercise 01 — Simple Agent
@@ -60,23 +51,25 @@ FLOW_STEPS = [
 ]
 
 
-def run(user_message: str) -> dict:
+def run(user_message: str, cfg: dict = None) -> dict:
     """Send one message, return reply + metadata."""
-    payload = {
-        "model":      MODEL,
-        "max_tokens": 1024,
-        "messages":   [{"role": "user", "content": user_message}],
-    }
+    cfg      = cfg or {}
+    pid      = cfg.get("provider_id", config.DEFAULT_PROVIDER)
+    model    = cfg.get("model",       config.get_default_model(pid))
+    api_key  = cfg.get("api_key",     "")
+    headers  = config.make_headers(pid, api_key)
+    url      = config.get_chat_url(pid, model)
+    payload  = config.build_payload(pid, model, [{"role": "user", "content": user_message}])
 
     t0 = time.time()
-    response = requests.post(f"{BASE_URL}/messages", headers=HEADERS, json=payload)
+    response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
     elapsed = round(time.time() - t0, 2)
 
     data = response.json()
     return {
-        "reply":   data["content"][0]["text"],
-        "latency": elapsed,
-        "request": payload,
+        "reply":    config.parse_reply(pid, data),
+        "latency":  elapsed,
+        "request":  payload,
         "response": data,
     }

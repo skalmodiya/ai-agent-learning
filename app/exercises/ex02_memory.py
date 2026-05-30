@@ -5,16 +5,7 @@ New concepts: system prompt (persona) + conversation history (memory).
 
 import requests
 import time
-
-API_KEY  = "a6eb413e-5c42-4420-87c0-f59b2a4e5a84"
-BASE_URL = "http://localhost:6655/anthropic/v1"
-MODEL    = "claude-sonnet-4-6"
-
-HEADERS = {
-    "x-api-key":         API_KEY,
-    "content-type":      "application/json",
-    "anthropic-version": "2023-06-01",
-}
+from . import config
 
 DEFAULT_PERSONA = (
     "You are Alex, a friendly AI tutor specializing in explaining technology concepts "
@@ -75,37 +66,35 @@ FLOW_STEPS = [
 ]
 
 
-def run(user_message: str, history: list, system_prompt: str = DEFAULT_PERSONA) -> dict:
+def run(user_message: str, history: list, system_prompt: str = DEFAULT_PERSONA, cfg: dict = None) -> dict:
     """
     Send a message with full conversation history.
     history: list of {"role": "user"|"assistant", "content": "..."} dicts
     Returns updated history + reply.
     """
-    # Append the new user message to history
-    new_history = history + [{"role": "user", "content": user_message}]
+    cfg      = cfg or {}
+    pid      = cfg.get("provider_id", config.DEFAULT_PROVIDER)
+    model    = cfg.get("model",       config.get_default_model(pid))
+    api_key  = cfg.get("api_key",     "")
+    headers  = config.make_headers(pid, api_key)
+    url      = config.get_chat_url(pid, model)
 
-    payload = {
-        "model":      MODEL,
-        "max_tokens": 1024,
-        "system":     system_prompt,
-        "messages":   new_history,
-    }
+    new_history = history + [{"role": "user", "content": user_message}]
+    payload     = config.build_payload(pid, model, new_history, system=system_prompt)
 
     t0 = time.time()
-    response = requests.post(f"{BASE_URL}/messages", headers=HEADERS, json=payload)
+    response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
     elapsed = round(time.time() - t0, 2)
 
-    data = response.json()
-    reply = data["content"][0]["text"]
-
-    # Append assistant reply so the next call includes it
+    data  = response.json()
+    reply = config.parse_reply(pid, data)
     updated_history = new_history + [{"role": "assistant", "content": reply}]
 
     return {
-        "reply":   reply,
-        "history": updated_history,
-        "latency": elapsed,
-        "request": payload,
+        "reply":    reply,
+        "history":  updated_history,
+        "latency":  elapsed,
+        "request":  payload,
         "response": data,
     }

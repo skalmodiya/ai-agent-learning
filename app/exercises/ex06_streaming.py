@@ -7,16 +7,7 @@ instead of waiting for the full response.
 import requests
 import time
 import json
-
-API_KEY  = "a6eb413e-5c42-4420-87c0-f59b2a4e5a84"
-BASE_URL = "http://localhost:6655/anthropic/v1"
-MODEL    = "claude-sonnet-4-6"
-
-HEADERS = {
-    "x-api-key":         API_KEY,
-    "content-type":      "application/json",
-    "anthropic-version": "2023-06-01",
-}
+from . import config
 
 CONCEPT = """
 ## Exercise 06 — Streaming
@@ -64,26 +55,22 @@ FLOW_STEPS = [
 ]
 
 
-def run_stream(user_message: str, history: list):
+def run_stream(user_message: str, history: list, cfg: dict = None):
     """
     Generator that yields text chunks as they arrive from the stream.
-    Usage: for chunk in run_stream(msg, history): print(chunk, end='')
+    Usage: for chunk in run_stream(msg, history, cfg): print(chunk, end='')
     """
+    cfg     = cfg or {}
+    pid     = cfg.get("provider_id", config.DEFAULT_PROVIDER)
+    model   = cfg.get("model",       config.get_default_model(pid))
+    api_key = cfg.get("api_key",     "")
+    headers = config.make_headers(pid, api_key)
+    url     = config.get_chat_url(pid, model)
+
     messages = history + [{"role": "user", "content": user_message}]
+    payload  = config.build_payload(pid, model, messages, stream=True)
 
-    payload = {
-        "model":      MODEL,
-        "max_tokens": 1024,
-        "stream":     True,
-        "messages":   messages,
-    }
-
-    with requests.post(
-        f"{BASE_URL}/messages",
-        headers=HEADERS,
-        json=payload,
-        stream=True,
-    ) as response:
+    with requests.post(url, headers=headers, json=payload, stream=True) as response:
         response.raise_for_status()
         for line in response.iter_lines():
             if not line:
@@ -108,11 +95,12 @@ def run_stream(user_message: str, history: list):
                 break
 
 
-def run(user_message: str, history: list) -> dict:
+def run(user_message: str, history: list, cfg: dict = None) -> dict:
     """Non-generator version — collects full streamed reply for app use."""
-    t0      = time.time()
-    chunks  = []
-    for chunk in run_stream(user_message, history):
+    cfg    = cfg or {}
+    t0     = time.time()
+    chunks = []
+    for chunk in run_stream(user_message, history, cfg):
         chunks.append(chunk)
     reply   = "".join(chunks)
     elapsed = round(time.time() - t0, 2)

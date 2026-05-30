@@ -28,6 +28,7 @@ from exercises import (
     ex07_structured,
     ex08_rag,
 )
+from exercises import config as ex_config
 
 # ─────────────────────────────────────────────
 # THEME & CSS
@@ -410,6 +411,30 @@ details summary:hover { color: var(--text-primary) !important; background: var(-
 ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
 /* ══════════════════════════════════════════════
+   CONFIG BAR
+   ══════════════════════════════════════════════ */
+.config-bar {
+  background: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--border-muted) !important;
+  padding: 10px 20px !important;
+}
+.config-bar .gradio-textbox input,
+.config-bar .gradio-textbox textarea {
+  font-family: 'Fira Code', monospace !important;
+  font-size: 13px !important;
+}
+.config-bar label span { color: var(--text-muted) !important; font-size: 12px !important; font-weight: 600 !important; }
+.config-status textarea {
+  font-size: 12px !important; font-weight: 600 !important;
+  text-align: center !important; padding: 6px 10px !important;
+  border-radius: var(--radius-md) !important;
+}
+.config-status-ok textarea  { color: var(--accent-green)  !important; background: rgba(52,211,153,0.08) !important; border-color: rgba(52,211,153,0.25) !important; }
+.config-status-err textarea { color: var(--accent-red)    !important; background: rgba(248,113,113,0.08) !important; border-color: rgba(248,113,113,0.25) !important; }
+.config-status-warn textarea{ color: var(--accent-orange) !important; background: rgba(251,146,60,0.08)  !important; border-color: rgba(251,146,60,0.25)  !important; }
+.config-status label span, .config-status .label-wrap { display: none !important; }
+
+/* ══════════════════════════════════════════════
    TAB CONTENT PADDING + ROW GAP
    ══════════════════════════════════════════════ */
 .tabitem { padding: 16px 16px 0 16px !important; }
@@ -493,7 +518,7 @@ def animate_flow(steps: list, active_idx: int) -> str:
 # PER-EXERCISE TAB BUILDERS
 # ─────────────────────────────────────────────
 
-def build_ex01_tab():
+def build_ex01_tab(cfg_state):
     state = gr.State({"history": []})
 
     with gr.Row(equal_height=False):
@@ -522,7 +547,7 @@ def build_ex01_tab():
                 ex01_simple.FLOW_STEPS[0][1], elem_classes="flow-box"
             )
 
-    def respond(message, history, s):
+    def respond(message, history, s, cfg):
         if not message.strip():
             return history, s, "⏱ Latency: —", None, animate_flow(ex01_simple.FLOW_STEPS, 0)
         try:
@@ -533,7 +558,7 @@ def build_ex01_tab():
             time.sleep(0.3)
             yield history, s, "⏱ Waiting for AI...", None, animate_flow(ex01_simple.FLOW_STEPS, 3)
 
-            result = ex01_simple.run(message)
+            result = ex01_simple.run(message, cfg=cfg)
 
             yield history, s, "⏱ Parsing...", None, animate_flow(ex01_simple.FLOW_STEPS, 4)
             time.sleep(0.2)
@@ -546,15 +571,15 @@ def build_ex01_tab():
             history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield history, s, "⏱ Error", None, animate_flow(ex01_simple.FLOW_STEPS, 0)
 
-    send_btn.click(respond, [msg_input, chatbot, state],
+    send_btn.click(respond, [msg_input, chatbot, state, cfg_state],
                    [chatbot, state, latency, raw_json, flow_display])
-    msg_input.submit(respond, [msg_input, chatbot, state],
+    msg_input.submit(respond, [msg_input, chatbot, state, cfg_state],
                      [chatbot, state, latency, raw_json, flow_display])
     clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", None, ex01_simple.FLOW_STEPS[0][1]),
                     outputs=[chatbot, state, latency, raw_json, flow_display])
 
 
-def build_ex02_tab():
+def build_ex02_tab(cfg_state):
     state = gr.State({"history": []})
 
     with gr.Row(equal_height=False):
@@ -583,7 +608,7 @@ def build_ex02_tab():
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(ex02_memory.FLOW_STEPS[0][1], elem_classes="flow-box")
 
-    def respond(message, history, s, persona):
+    def respond(message, history, s, persona, cfg):
         if not message.strip():
             return history, s, "⏱ Latency: —", f"💬 Turns: {len(s['history'])//2}", animate_flow(ex02_memory.FLOW_STEPS, 0)
         try:
@@ -593,7 +618,7 @@ def build_ex02_tab():
             time.sleep(0.2)
             yield history, s, "⏱ Waiting for AI...", f"💬 Turns: {len(s['history'])//2}", animate_flow(ex02_memory.FLOW_STEPS, 3)
 
-            result = ex02_memory.run(message, s["history"], persona)
+            result = ex02_memory.run(message, s["history"], persona, cfg=cfg)
             s["history"] = result["history"]
 
             history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": result["reply"]}]
@@ -604,15 +629,15 @@ def build_ex02_tab():
             history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield history, s, "⏱ Error", f"💬 Turns: {len(s['history'])//2}", animate_flow(ex02_memory.FLOW_STEPS, 0)
 
-    send_btn.click(respond, [msg_input, chatbot, state, persona_input],
+    send_btn.click(respond, [msg_input, chatbot, state, persona_input, cfg_state],
                    [chatbot, state, latency, turn_count, flow_display])
-    msg_input.submit(respond, [msg_input, chatbot, state, persona_input],
+    msg_input.submit(respond, [msg_input, chatbot, state, persona_input, cfg_state],
                      [chatbot, state, latency, turn_count, flow_display])
     clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", "💬 Turns: 0", ex02_memory.FLOW_STEPS[0][1]),
                     outputs=[chatbot, state, latency, turn_count, flow_display])
 
 
-def build_ex03_tab():
+def build_ex03_tab(cfg_state):
     state = gr.State({"history": []})
 
     with gr.Row(equal_height=False):
@@ -639,7 +664,7 @@ def build_ex03_tab():
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(ex03_tools.FLOW_STEPS[0][1], elem_classes="flow-box")
 
-    def respond(message, history, s):
+    def respond(message, history, s, cfg):
         if not message.strip():
             return history, s, "⏱ Latency: —", [], animate_flow(ex03_tools.FLOW_STEPS, 0)
         try:
@@ -647,7 +672,7 @@ def build_ex03_tab():
             time.sleep(0.3)
             yield history, s, "⏱ AI deciding...", [], animate_flow(ex03_tools.FLOW_STEPS, 2)
 
-            result = ex03_tools.run(message, s["history"])
+            result = ex03_tools.run(message, s["history"], cfg=cfg)
             s["history"] = result["history"]
 
             # Animate through tool call steps if tools were used
@@ -666,15 +691,15 @@ def build_ex03_tab():
             history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield history, s, "⏱ Error", [], animate_flow(ex03_tools.FLOW_STEPS, 0)
 
-    send_btn.click(respond, [msg_input, chatbot, state],
+    send_btn.click(respond, [msg_input, chatbot, state, cfg_state],
                    [chatbot, state, latency, tool_log, flow_display])
-    msg_input.submit(respond, [msg_input, chatbot, state],
+    msg_input.submit(respond, [msg_input, chatbot, state, cfg_state],
                      [chatbot, state, latency, tool_log, flow_display])
     clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", [], ex03_tools.FLOW_STEPS[0][1]),
                     outputs=[chatbot, state, latency, tool_log, flow_display])
 
 
-def build_ex04_tab():
+def build_ex04_tab(cfg_state):
     with gr.Row(equal_height=False):
         with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
@@ -700,14 +725,14 @@ def build_ex04_tab():
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(ex04_react.FLOW_STEPS[0][1], elem_classes="flow-box")
 
-    def respond(message):
+    def respond(message, cfg):
         if not message.strip():
             return "_Enter a question..._", "⏱ Latency: —", animate_flow(ex04_react.FLOW_STEPS, 0)
         yield "⏳ _Thinking..._", "⏱ Running ReAct loop...", animate_flow(ex04_react.FLOW_STEPS, 1)
         time.sleep(0.3)
         yield "⏳ _Thinking..._", "⏱ Running ReAct loop...", animate_flow(ex04_react.FLOW_STEPS, 2)
         try:
-            result = ex04_react.run(message)
+            result = ex04_react.run(message, cfg=cfg)
             # Format the trace nicely
             trace_md = "### ReAct Trace\n\n"
             for step in result["trace"]:
@@ -721,11 +746,11 @@ def build_ex04_tab():
         except Exception as e:
             yield f"❌ Error: {e}", "⏱ Error", animate_flow(ex04_react.FLOW_STEPS, 0)
 
-    send_btn.click(respond, [msg_input], [trace_box, latency, flow_display])
-    msg_input.submit(respond, [msg_input], [trace_box, latency, flow_display])
+    send_btn.click(respond, [msg_input, cfg_state], [trace_box, latency, flow_display])
+    msg_input.submit(respond, [msg_input, cfg_state], [trace_box, latency, flow_display])
 
 
-def build_ex05_tab():
+def build_ex05_tab(cfg_state):
     with gr.Row(equal_height=False):
         with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
@@ -750,13 +775,13 @@ def build_ex05_tab():
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(ex05_multi_agent.FLOW_STEPS[0][1], elem_classes="flow-box")
 
-    def respond(message):
+    def respond(message, cfg):
         if not message.strip():
             return "_Enter a task..._", "_..._", "⏱ Latency: —", animate_flow(ex05_multi_agent.FLOW_STEPS, 0)
         yield "_Planner thinking..._", "_Waiting for plan..._", "⏱ Running...", animate_flow(ex05_multi_agent.FLOW_STEPS, 1)
         time.sleep(0.3)
         try:
-            result = ex05_multi_agent.run(message)
+            result = ex05_multi_agent.run(message, cfg=cfg)
             yield (f"### Planner's Plan\n\n{result['plan']}",
                    "_Writer executing..._",
                    f"⏱ Running...",
@@ -769,11 +794,11 @@ def build_ex05_tab():
         except Exception as e:
             yield f"❌ Error: {e}", "", "⏱ Error", animate_flow(ex05_multi_agent.FLOW_STEPS, 0)
 
-    send_btn.click(respond, [msg_input], [planner_box, writer_box, latency, flow_display])
-    msg_input.submit(respond, [msg_input], [planner_box, writer_box, latency, flow_display])
+    send_btn.click(respond, [msg_input, cfg_state], [planner_box, writer_box, latency, flow_display])
+    msg_input.submit(respond, [msg_input, cfg_state], [planner_box, writer_box, latency, flow_display])
 
 
-def build_ex06_tab():
+def build_ex06_tab(cfg_state):
     state = gr.State({"history": []})
 
     with gr.Row(equal_height=False):
@@ -800,7 +825,7 @@ def build_ex06_tab():
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(ex06_streaming.FLOW_STEPS[0][1], elem_classes="flow-box")
 
-    def respond(message, history, s):
+    def respond(message, history, s, cfg):
         if not message.strip():
             return history, s, "⏱ Latency: —", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 0)
         yield history, s, "⏱ Connecting...", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 1)
@@ -812,7 +837,7 @@ def build_ex06_tab():
             accumulated = ""
             chunk_n = 0
             # Stream tokens — build history with dict format Gradio 6 expects
-            for chunk in ex06_streaming.run_stream(message, s["history"]):
+            for chunk in ex06_streaming.run_stream(message, s["history"], cfg=cfg):
                 accumulated += chunk
                 chunk_n += 1
                 current_history = history + [
@@ -839,15 +864,15 @@ def build_ex06_tab():
             err_history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield err_history, s, "⏱ Error", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 0)
 
-    send_btn.click(respond, [msg_input, chatbot, state],
+    send_btn.click(respond, [msg_input, chatbot, state, cfg_state],
                    [chatbot, state, latency, chunk_count, flow_display])
-    msg_input.submit(respond, [msg_input, chatbot, state],
+    msg_input.submit(respond, [msg_input, chatbot, state, cfg_state],
                      [chatbot, state, latency, chunk_count, flow_display])
     clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", "📦 Chunks: 0", ex06_streaming.FLOW_STEPS[0][1]),
                     outputs=[chatbot, state, latency, chunk_count, flow_display])
 
 
-def build_ex07_tab():
+def build_ex07_tab(cfg_state):
     with gr.Row(equal_height=False):
         with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
@@ -884,7 +909,7 @@ def build_ex07_tab():
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(ex07_structured.FLOW_STEPS[0][1], elem_classes="flow-box")
 
-    def respond(message):
+    def respond(message, cfg):
         if not message.strip():
             return ("⏱ Latency: —", "", "", "", "", "", "", None,
                     animate_flow(ex07_structured.FLOW_STEPS, 0))
@@ -894,7 +919,7 @@ def build_ex07_tab():
         yield ("⏱ AI analyzing...", "", "", "", "", "", "", None,
                animate_flow(ex07_structured.FLOW_STEPS, 2))
         try:
-            result = ex07_structured.run(message)
+            result = ex07_structured.run(message, cfg=cfg)
             s = result["structured"] or {}
             yield ("⏱ Validating...", "", "", "", "", "", "", None,
                    animate_flow(ex07_structured.FLOW_STEPS, 3))
@@ -914,15 +939,15 @@ def build_ex07_tab():
             yield (f"⏱ Error", str(e), "", "", "", "", "", None,
                    animate_flow(ex07_structured.FLOW_STEPS, 0))
 
-    send_btn.click(respond, [msg_input],
+    send_btn.click(respond, [msg_input, cfg_state],
                    [latency, summary_box, sentiment_box, score_box,
                     keywords_box, pros_box, cons_box, raw_json, flow_display])
-    msg_input.submit(respond, [msg_input],
+    msg_input.submit(respond, [msg_input, cfg_state],
                      [latency, summary_box, sentiment_box, score_box,
                       keywords_box, pros_box, cons_box, raw_json, flow_display])
 
 
-def build_ex08_tab():
+def build_ex08_tab(cfg_state):
     with gr.Row(equal_height=False):
         with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
@@ -951,7 +976,7 @@ def build_ex08_tab():
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(ex08_rag.FLOW_STEPS[0][1], elem_classes="flow-box")
 
-    def respond(message, history):
+    def respond(message, history, cfg):
         if not message.strip():
             return history, "⏱ Latency: —", "_..._", animate_flow(ex08_rag.FLOW_STEPS, 0)
         yield history, "⏱ Sending...", "_..._", animate_flow(ex08_rag.FLOW_STEPS, 1)
@@ -962,7 +987,7 @@ def build_ex08_tab():
         time.sleep(0.2)
         yield history, "⏱ AI generating...", "_Generating grounded answer..._", animate_flow(ex08_rag.FLOW_STEPS, 4)
         try:
-            result = ex08_rag.run(message)
+            result = ex08_rag.run(message, cfg=cfg)
             history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": result["reply"]}]
             sources_md = "**Retrieved:** " + " · ".join(f"`{s}`" for s in result["sources"])
             yield (history, f"⏱ Latency: {result['latency']}s",
@@ -971,9 +996,9 @@ def build_ex08_tab():
             history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield history, "⏱ Error", "_Error_", animate_flow(ex08_rag.FLOW_STEPS, 0)
 
-    send_btn.click(respond, [msg_input, chatbot],
+    send_btn.click(respond, [msg_input, chatbot, cfg_state],
                    [chatbot, latency, sources_box, flow_display])
-    msg_input.submit(respond, [msg_input, chatbot],
+    msg_input.submit(respond, [msg_input, chatbot, cfg_state],
                      [chatbot, latency, sources_box, flow_display])
     clear_btn.click(lambda: ([], "⏱ Latency: —", "_..._", ex08_rag.FLOW_STEPS[0][1]),
                     outputs=[chatbot, latency, sources_box, flow_display])
@@ -1051,24 +1076,124 @@ def build_app():
                 elem_classes="theme-radio",
             )
 
+        # ── Config State (shared across all tabs) ──
+        cfg_state = gr.State({
+            "api_key":     "",
+            "provider_id": ex_config.DEFAULT_PROVIDER,
+            "model":       ex_config.get_default_model(ex_config.DEFAULT_PROVIDER),
+        })
+
+        # ── Config Bar ──
+        with gr.Row(elem_classes="config-bar"):
+            api_key_input = gr.Textbox(
+                placeholder="Paste your API key here...",
+                label="🔑 API Key",
+                type="password",
+                scale=3,
+                min_width=260,
+            )
+            provider_dd = gr.Dropdown(
+                choices=ex_config.PROVIDER_LABELS,
+                value=None,
+                label="🌐 Provider",
+                interactive=False,
+                scale=2,
+                min_width=160,
+            )
+            model_dd = gr.Dropdown(
+                choices=[],
+                value=None,
+                label="🤖 Model",
+                interactive=False,
+                scale=2,
+                min_width=200,
+            )
+            cfg_status = gr.Textbox(
+                value="⚠ Enter API key",
+                label="",
+                interactive=False,
+                scale=2,
+                min_width=160,
+                elem_classes="config-status config-status-warn",
+            )
+
+        # When API key is entered → unlock provider dropdown, set default
+        def on_api_key(key, cfg):
+            key = key.strip()
+            if not key:
+                return (
+                    gr.update(value=None, interactive=False),
+                    gr.update(choices=[], value=None, interactive=False),
+                    gr.update(value="⚠ Enter API key", elem_classes="config-status config-status-warn"),
+                    {**cfg, "api_key": "", "provider_id": ex_config.DEFAULT_PROVIDER, "model": ""},
+                )
+            default_label = ex_config.PROVIDERS[ex_config.DEFAULT_PROVIDER]["label"]
+            default_models = ex_config.get_models(ex_config.DEFAULT_PROVIDER)
+            default_model  = default_models[0]
+            return (
+                gr.update(value=default_label, choices=ex_config.PROVIDER_LABELS, interactive=True),
+                gr.update(choices=default_models, value=default_model, interactive=True),
+                gr.update(value=f"✅ {default_label} · {default_model}", elem_classes="config-status config-status-ok"),
+                {**cfg, "api_key": key, "provider_id": ex_config.DEFAULT_PROVIDER, "model": default_model},
+            )
+
+        api_key_input.change(
+            on_api_key,
+            inputs=[api_key_input, cfg_state],
+            outputs=[provider_dd, model_dd, cfg_status, cfg_state],
+        )
+
+        # When provider changes → refresh model list, pick first model
+        def on_provider(provider_label, cfg):
+            if not provider_label:
+                return gr.update(choices=[], value=None), gr.update(value="⚠ Select provider", elem_classes="config-status config-status-warn"), cfg
+            pid    = ex_config.label_to_id(provider_label)
+            models = ex_config.get_models(pid)
+            model  = models[0]
+            return (
+                gr.update(choices=models, value=model, interactive=True),
+                gr.update(value=f"✅ {provider_label} · {model}", elem_classes="config-status config-status-ok"),
+                {**cfg, "provider_id": pid, "model": model},
+            )
+
+        provider_dd.change(
+            on_provider,
+            inputs=[provider_dd, cfg_state],
+            outputs=[model_dd, cfg_status, cfg_state],
+        )
+
+        # When model changes → update cfg
+        def on_model(model, cfg):
+            if not model:
+                return cfg
+            pid = cfg.get("provider_id", ex_config.DEFAULT_PROVIDER)
+            label = ex_config.PROVIDERS[pid]["label"]
+            return {**cfg, "model": model}
+
+        model_dd.change(
+            on_model,
+            inputs=[model_dd, cfg_state],
+            outputs=[cfg_state],
+        )
+
         # ── Exercise Tabs ──
         with gr.Tabs():
             with gr.Tab("01 · Simple Agent"):
-                build_ex01_tab()
+                build_ex01_tab(cfg_state)
             with gr.Tab("02 · Memory & Persona"):
-                build_ex02_tab()
+                build_ex02_tab(cfg_state)
             with gr.Tab("03 · Tool Use"):
-                build_ex03_tab()
+                build_ex03_tab(cfg_state)
             with gr.Tab("04 · ReAct Loop"):
-                build_ex04_tab()
+                build_ex04_tab(cfg_state)
             with gr.Tab("05 · Multi-Agent"):
-                build_ex05_tab()
+                build_ex05_tab(cfg_state)
             with gr.Tab("06 · Streaming"):
-                build_ex06_tab()
+                build_ex06_tab(cfg_state)
             with gr.Tab("07 · Structured Output"):
-                build_ex07_tab()
+                build_ex07_tab(cfg_state)
             with gr.Tab("08 · RAG"):
-                build_ex08_tab()
+                build_ex08_tab(cfg_state)
 
         gr.HTML("""
 <div style="text-align:center; color:var(--text-faint); font-size:12px; padding:20px 0 8px 0; border-top:1px solid var(--border-muted); margin-top:16px;">

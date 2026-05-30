@@ -6,16 +6,7 @@ answers from YOUR data, not just its training data.
 
 import requests
 import time
-
-API_KEY  = "a6eb413e-5c42-4420-87c0-f59b2a4e5a84"
-BASE_URL = "http://localhost:6655/anthropic/v1"
-MODEL    = "claude-sonnet-4-6"
-
-HEADERS = {
-    "x-api-key":         API_KEY,
-    "content-type":      "application/json",
-    "anthropic-version": "2023-06-01",
-}
+from . import config
 
 CONCEPT = """
 ## Exercise 08 — RAG (Retrieval-Augmented Generation)
@@ -123,17 +114,18 @@ def retrieve(query: str, top_k: int = 2) -> list[dict]:
     return [doc for _, doc in scored[:top_k] if _ > 0] or [scored[0][1]]
 
 
-def run(user_message: str) -> dict:
+def run(user_message: str, cfg: dict = None) -> dict:
     """RAG pipeline: retrieve → augment → generate."""
-    t0 = time.time()
+    cfg     = cfg or {}
+    pid     = cfg.get("provider_id", config.DEFAULT_PROVIDER)
+    model   = cfg.get("model",       config.get_default_model(pid))
+    api_key = cfg.get("api_key",     "")
+    headers = config.make_headers(pid, api_key)
+    url     = config.get_chat_url(pid, model)
+    t0      = time.time()
 
-    # Step 1: Retrieve relevant docs
-    retrieved_docs = retrieve(user_message)
-
-    # Step 2: Build augmented prompt
-    context = "\n\n".join(
-        f"[{doc['title']}]\n{doc['content']}" for doc in retrieved_docs
-    )
+    retrieved_docs   = retrieve(user_message)
+    context          = "\n\n".join(f"[{d['title']}]\n{d['content']}" for d in retrieved_docs)
     augmented_prompt = (
         f"Use ONLY the following documents to answer the question. "
         f"If the answer is not in the documents, say so.\n\n"
@@ -141,18 +133,13 @@ def run(user_message: str) -> dict:
         f"Question: {user_message}"
     )
 
-    payload = {
-        "model":      MODEL,
-        "max_tokens": 1024,
-        "messages":   [{"role": "user", "content": augmented_prompt}],
-    }
-
-    response = requests.post(f"{BASE_URL}/messages", headers=HEADERS, json=payload)
+    payload  = config.build_payload(pid, model, [{"role": "user", "content": augmented_prompt}])
+    response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
     elapsed = round(time.time() - t0, 2)
 
     data  = response.json()
-    reply = data["content"][0]["text"]
+    reply = config.parse_reply(pid, data)
 
     return {
         "reply":          reply,

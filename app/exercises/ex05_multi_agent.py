@@ -6,16 +6,7 @@ Agent A plans/researches, Agent B writes/executes.
 
 import requests
 import time
-
-API_KEY  = "a6eb413e-5c42-4420-87c0-f59b2a4e5a84"
-BASE_URL = "http://localhost:6655/anthropic/v1"
-MODEL    = "claude-sonnet-4-6"
-
-HEADERS = {
-    "x-api-key":         API_KEY,
-    "content-type":      "application/json",
-    "anthropic-version": "2023-06-01",
-}
+from . import config
 
 CONCEPT = """
 ## Exercise 05 — Multi-Agent
@@ -74,36 +65,38 @@ WRITER_SYSTEM = (
 )
 
 
-def _call(system: str, messages: list) -> dict:
+def _call(system: str, messages: list, cfg: dict) -> dict:
     """Single API call helper."""
-    payload = {
-        "model":      MODEL,
-        "max_tokens": 1024,
-        "system":     system,
-        "messages":   messages,
-    }
-    response = requests.post(f"{BASE_URL}/messages", headers=HEADERS, json=payload)
+    pid     = cfg.get("provider_id", config.DEFAULT_PROVIDER)
+    model   = cfg.get("model",       config.get_default_model(pid))
+    api_key = cfg.get("api_key",     "")
+    headers = config.make_headers(pid, api_key)
+    url     = config.get_chat_url(pid, model)
+    payload = config.build_payload(pid, model, messages, system=system)
+    response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
     data = response.json()
     return {
-        "text":    data["content"][0]["text"],
+        "text":    config.parse_reply(pid, data),
         "payload": payload,
         "raw":     data,
     }
 
 
-def run(user_message: str) -> dict:
+def run(user_message: str, cfg: dict = None) -> dict:
     """
     Run the two-agent pipeline:
     1. Planner breaks the task into steps
     2. Writer executes the plan
     """
-    t0 = time.time()
+    cfg = cfg or {}
+    t0  = time.time()
 
     # ── Agent 1: Planner ──
     planner_result = _call(
         system=PLANNER_SYSTEM,
         messages=[{"role": "user", "content": f"Task: {user_message}"}],
+        cfg=cfg,
     )
     plan = planner_result["text"]
 
@@ -114,6 +107,7 @@ def run(user_message: str) -> dict:
             "role":    "user",
             "content": f"Here is your plan to execute:\n\n{plan}\n\nOriginal request: {user_message}",
         }],
+        cfg=cfg,
     )
 
     elapsed = round(time.time() - t0, 2)
