@@ -751,7 +751,7 @@ details > div, .accordion > div {
 
 """
 
-# JS that runs once on page load — applies saved theme AND restores saved API key
+# JS that runs once on page load — applies saved theme
 THEME_JS = """
 function applyTheme(t) {
   var resolved = t === 'system'
@@ -763,19 +763,6 @@ function applyTheme(t) {
 var saved = localStorage.getItem('ai-agent-theme') || 'dark';
 applyTheme(saved);
 setTimeout(function(){ applyTheme(localStorage.getItem('ai-agent-theme') || 'dark'); }, 800);
-
-// Restore saved API key into the password input and fire a change event
-// so Gradio's on_api_key handler unlocks the provider/model dropdowns.
-setTimeout(function() {
-  var savedKey = localStorage.getItem('ai-agent-key') || '';
-  if (!savedKey) return;
-  var inputs = document.querySelectorAll('input[type="password"]');
-  inputs.forEach(function(inp) {
-    var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-    nativeInputValueSetter.call(inp, savedKey);
-    inp.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-}, 1200);
 """
 
 
@@ -1423,6 +1410,20 @@ def build_app():
             fn=None,
             inputs=[api_key_input],
             js="(k) => { if(k && k.trim()) localStorage.setItem('ai-agent-key', k.trim()); else localStorage.removeItem('ai-agent-key'); }",
+        )
+
+        # ── Restore API key on page load ──
+        # JS reads localStorage and returns the saved key as a string.
+        # Python receives it, sets up provider/model/cfg exactly like on_api_key does,
+        # and also updates the visible input field value.
+        def restore_api_key(saved_key, cfg):
+            return on_api_key(saved_key, cfg) + (gr.update(value=saved_key),)
+
+        app.load(
+            fn=restore_api_key,
+            inputs=[gr.State(""), cfg_state],
+            outputs=[provider_dd, model_dd, cfg_status, cfg_state, api_key_input],
+            js="() => localStorage.getItem('ai-agent-key') || ''",
         )
 
         # When provider changes → refresh model list, pick first model
