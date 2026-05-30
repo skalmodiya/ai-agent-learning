@@ -593,17 +593,38 @@ details summary:hover {
 
 # JS that runs once on page load — applies saved theme and wires the Radio change
 THEME_JS = """
-function applyTheme(theme) {
-  const resolved = (theme === '💻 System')
+function setTheme(t) {
+  var resolved = t === 'system'
     ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
-    : (theme === '☀️ Light' ? 'light' : 'dark');
+    : t;
   document.documentElement.setAttribute('data-theme', resolved);
-  localStorage.setItem('ai-agent-theme', theme);
+  localStorage.setItem('ai-agent-theme-key', t);
+  ['dark','light','system'].forEach(function(k) {
+    var b = document.getElementById('btn-theme-' + k);
+    if (!b) return;
+    if (k === t) {
+      b.style.background = '#2563eb';
+      b.style.color = '#fff';
+      b.style.borderColor = '#2563eb';
+      b.style.boxShadow = '0 2px 8px rgba(37,99,235,0.5)';
+    } else {
+      b.style.background = '';
+      b.style.color = '';
+      b.style.borderColor = '';
+      b.style.boxShadow = '';
+    }
+  });
 }
 
-// Restore on load
-const saved = localStorage.getItem('ai-agent-theme') || '🌙 Dark';
-applyTheme(saved);
+// Wire clicks via event delegation — works even after Gradio re-renders
+document.addEventListener('click', function(e) {
+  var t = e.target.closest('[data-theme-set]');
+  if (t) setTheme(t.getAttribute('data-theme-set'));
+});
+
+// Restore saved theme on page load
+var _saved = localStorage.getItem('ai-agent-theme-key') || 'dark';
+setTheme(_saved);
 """
 
 
@@ -1130,7 +1151,7 @@ def build_app():
         js=f"() => {{ {THEME_JS} }}",  # runs on page load to restore saved theme
     ) as app:
 
-        # ── Header (contains theme buttons inline) ──
+        # ── Header ──
         gr.HTML("""
 <div style="
   background: var(--header-bg);
@@ -1171,49 +1192,18 @@ def build_app():
       <span style="background:rgba(251,146,60,0.1); color:var(--accent-orange); border:1px solid rgba(251,146,60,0.25); border-radius:20px; padding:3px 11px; font-size:11px; font-weight:600; white-space:nowrap;">🔄 Flows</span>
     </div>
 
-    <!-- Theme switcher row -->
+    <!-- Theme switcher — data-theme-set picked up by event delegation in THEME_JS -->
     <div style="display:flex; align-items:center; gap:6px;">
-      <span style="font-size:11px; color:var(--text-faint); font-weight:500; margin-right:4px; white-space:nowrap;">Theme</span>
-      <button id="btn-dark"   onclick="setTheme('dark')"   style="cursor:pointer; border:1px solid var(--border); border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:var(--btn-primary); color:#fff; transition:all 0.15s;">🌙 Dark</button>
-      <button id="btn-light"  onclick="setTheme('light')"  style="cursor:pointer; border:1px solid var(--border); border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:var(--bg-elevated); color:var(--text-muted); transition:all 0.15s;">☀️ Light</button>
-      <button id="btn-system" onclick="setTheme('system')" style="cursor:pointer; border:1px solid var(--border); border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:var(--bg-elevated); color:var(--text-muted); transition:all 0.15s;">💻 System</button>
+      <span style="font-size:11px; color:var(--text-faint); font-weight:500; margin-right:2px; white-space:nowrap; user-select:none;">Theme</span>
+      <button id="btn-theme-dark"   data-theme-set="dark"   style="cursor:pointer; border:1px solid #2563eb; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:#2563eb; color:#fff; transition:all 0.15s;">🌙 Dark</button>
+      <button id="btn-theme-light"  data-theme-set="light"  style="cursor:pointer; border:1px solid #2a3550; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:#1a2540; color:#7888aa; transition:all 0.15s;">☀️ Light</button>
+      <button id="btn-theme-system" data-theme-set="system" style="cursor:pointer; border:1px solid #2a3550; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:#1a2540; color:#7888aa; transition:all 0.15s;">💻 System</button>
     </div>
 
   </div>
 </div>
-
-<script>
-function setTheme(t) {
-  const resolved = t === 'system'
-    ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
-    : t;
-  document.documentElement.setAttribute('data-theme', resolved);
-  localStorage.setItem('ai-agent-theme-key', t);
-  ['dark','light','system'].forEach(function(k) {
-    var b = document.getElementById('btn-' + k);
-    if (!b) return;
-    if (k === t) {
-      b.style.background = 'var(--btn-primary)';
-      b.style.color = '#fff';
-      b.style.borderColor = 'var(--btn-primary)';
-      b.style.boxShadow = '0 2px 8px rgba(37,99,235,0.4)';
-    } else {
-      b.style.background = 'var(--bg-elevated)';
-      b.style.color = 'var(--text-muted)';
-      b.style.borderColor = 'var(--border)';
-      b.style.boxShadow = 'none';
-    }
-  });
-}
-// Restore on load
-(function() {
-  var saved = localStorage.getItem('ai-agent-theme-key') || 'dark';
-  setTheme(saved);
-})();
-</script>
 """)
-        # Hidden radio — kept only so theme_radio.change() JS still fires for
-        # any programmatic callers; not shown in the UI.
+        # Hidden radio — kept for the theme_radio.change() wiring below
         with gr.Row(visible=False):
             theme_radio = gr.Radio(
                 choices=["🌙 Dark", "☀️ Light", "💻 System"],
