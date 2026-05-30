@@ -227,9 +227,11 @@ p, span, li, td, th, label, div, h1, h2, h3, h4 {
   border: 1px solid var(--border-muted) !important;
   border-radius: var(--radius-lg) !important;
   padding: 20px 22px !important;
-  min-height: 520px !important;
+  min-height: 600px !important;
+  height: 100% !important;
   box-shadow: var(--shadow-card) !important;
   color: var(--text-primary) !important;
+  overflow-y: auto !important;
 }
 .panel-card:hover { border-color: var(--border) !important; }
 
@@ -327,14 +329,22 @@ p, span, li, td, th, label, div, h1, h2, h3, h4 {
 }
 .chatbot .bot, .chatbot [data-testid="bot"] {
   background: var(--bot-bubble) !important;
-  color: var(--text-secondary) !important;
+  color: var(--text-primary) !important;
   border: 1px solid var(--bot-border) !important;
   border-radius: 16px 16px 16px 4px !important;
   padding: 10px 14px !important; max-width: 82% !important;
 }
-/* ensure markdown inside chatbot bubbles is readable */
-.chatbot .user p, .chatbot .user span, .chatbot .user li { color: var(--text-primary) !important; }
-.chatbot .bot  p, .chatbot .bot  span, .chatbot .bot  li { color: var(--text-secondary) !important; }
+/* ensure ALL text inside chatbot bubbles is always readable */
+.chatbot .user p, .chatbot .user span, .chatbot .user li,
+.chatbot .user div, .chatbot .user code { color: var(--text-primary) !important; }
+.chatbot .bot  p, .chatbot .bot  span, .chatbot .bot  li,
+.chatbot .bot  div, .chatbot .bot  code { color: var(--text-primary) !important; }
+/* Gradio 6 message wrapper selectors */
+[data-testid="user"] *, [data-testid="bot"] * { color: var(--text-primary) !important; }
+.message-wrap *, .prose * { color: var(--text-primary) !important; }
+/* override any white background that Gradio sets on message content */
+.chatbot .message-wrap, .chatbot .message-wrap > div,
+.chatbot .bubble-wrap > div { background: transparent !important; }
 
 /* ══════════════════════════════════════════════
    INPUTS & TEXTAREAS
@@ -529,12 +539,12 @@ button.secondary:hover {
   background: var(--bg-input) !important;
   border: 1px solid var(--border-muted) !important;
   border-radius: var(--radius-md) !important;
-  padding: 14px !important;
+  padding: 18px 20px !important;
+  min-height: 300px !important;
 }
 .flow-box .prose, .flow-box .prose * {
-  font-family: 'Fira Code', Consolas, monospace !important;
-  font-size: 12.5px !important;
-  line-height: 1.9 !important;
+  font-size: 13.5px !important;
+  line-height: 1.8 !important;
   color: var(--text-secondary) !important;
 }
 .flow-box .prose code,
@@ -544,15 +554,15 @@ button.secondary:hover {
   color: var(--code-text) !important;
   border: 1px solid var(--border-muted) !important;
   border-radius: var(--radius-sm) !important;
+  font-family: 'Fira Code', Consolas, monospace !important;
   font-size: 12px !important;
   padding: 3px 9px !important;
 }
-.flow-box .prose strong { color: var(--accent-orange) !important; font-weight: 700 !important; }
-.flow-box .prose em     { color: var(--accent-cyan)   !important; font-style: normal !important; }
-.flow-box .prose del    { color: var(--text-faint)    !important; opacity: 0.7 !important; }
-.flow-box .prose hr     { border-color: var(--border-muted) !important; margin: 10px 0 !important; }
-/* progress bar inline code */
-.flow-box .prose p > code { background: transparent !important; border: none !important; padding: 0 !important; color: var(--accent-green) !important; font-size: 13px !important; letter-spacing: 1px !important; }
+.flow-box .prose pre { padding: 12px 16px !important; overflow-x: auto !important; margin: 8px 0 !important; }
+.flow-box .prose pre code { padding: 0 !important; border: none !important; background: transparent !important; }
+.flow-box .prose strong { color: var(--accent-blue) !important; font-weight: 700 !important; }
+.flow-box .prose em     { color: var(--text-muted) !important; font-style: italic !important; }
+.flow-box .prose hr     { border-color: var(--border-muted) !important; margin: 12px 0 !important; }
 
 /* ══════════════════════════════════════════════
    ACCORDION
@@ -637,7 +647,11 @@ details > div, .accordion > div {
 /* ══════════════════════════════════════════════
    TAB CONTENT PADDING
    ══════════════════════════════════════════════ */
-.tabitem { padding: 16px 16px 0 16px !important; }
+.tabitem { padding: 12px 12px 0 12px !important; }
+.tabitem > div { gap: 10px !important; }
+/* Make the row fill full viewport width */
+.tabitem > .gap, .tabitem > div > .gap { gap: 10px !important; }
+.gradio-row { gap: 10px !important; align-items: stretch !important; }
 
 /* ══════════════════════════════════════════════
    PERSONA TEXTBOX (ex02)
@@ -719,45 +733,33 @@ setTimeout(wireTheme, 1500);
 
 def animate_flow(steps: list, active_idx: int) -> str:
     """
-    Render a step-by-step flow diagram.
-    - Completed steps: ✅ step name (clean label, no diagram clutter)
-    - Active step: full diagram + description, highlighted with ▶
-    - Future steps: dimmed label only
-    steps: list of (key, markdown_text) tuples
+    Render a clean vertical step list.
+    - Completed: ✅ Step Name
+    - Active:    ▶ Step Name  +  full diagram/description below
+    - Future:    ○ Step Name  (dimmed)
     """
-    # Build a step-name label from the key: "plan_out" → "Plan Out"
     def label(key: str) -> str:
         return key.replace("_", " ").title()
 
     sections = []
-
-    # Progress bar line at the top
-    total = len(steps)
-    done  = min(active_idx, total)
-    filled = "█" * done
-    empty  = "░" * (total - done)
-    pct = int(done / total * 100) if total else 0
-    sections.append(f"`{filled}{empty}` **{pct}%**\n")
-
     for i, (key, text) in enumerate(steps):
-        step_num = i  # 0 = idle / waiting state, 1+ = real steps
-        if i == 0 and key in ("idle", "waiting", "start"):
-            # The first entry is the idle/waiting state — only show when nothing is running
+        is_idle = (i == 0 and key in ("idle", "waiting", "start"))
+
+        if is_idle:
             if active_idx == 0:
-                sections.append(text)
+                # Show the idle diagram before anything starts
+                sections.append(f"*Waiting for your message...*\n\n{text}")
+            # skip idle step once processing begins
             continue
 
         if i < active_idx:
-            # Completed
-            sections.append(f"✅ **{label(key)}**")
+            sections.append(f"✅ &nbsp;**{label(key)}**")
         elif i == active_idx:
-            # Active — show full diagram + description
             sections.append(f"**▶ {label(key)}**\n\n{text}")
         else:
-            # Future — dimmed label
-            sections.append(f"○ {label(key)}")
+            sections.append(f"○ &nbsp;{label(key)}")
 
-    return "\n\n".join(sections)
+    return "\n\n".join(sections) if sections else steps[0][1]
 
 
 # ─────────────────────────────────────────────
@@ -769,14 +771,14 @@ def build_ex01_tab(cfg_state):
 
     with gr.Row(equal_height=False):
         # ── Panel 1: Learn ──
-        with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
+        with gr.Column(scale=2, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
             gr.Markdown(ex01_simple.CONCEPT)
 
         # ── Panel 2: Try It ──
         with gr.Column(scale=4, elem_classes="panel-card"):
             gr.Markdown("### ▶ Try It Live", elem_classes="section-label")
-            chatbot   = gr.Chatbot(height=360, label="", show_label=False)
+            chatbot   = gr.Chatbot(height=480, label="", show_label=False)
             msg_input = gr.Textbox(placeholder="Type a message...", show_label=False, lines=1)
             with gr.Row():
                 send_btn  = gr.Button("Send", variant="primary", elem_classes="send-btn")
@@ -787,7 +789,7 @@ def build_ex01_tab(cfg_state):
                 raw_json = gr.JSON(label="")
 
         # ── Panel 3: How It Works ──
-        with gr.Column(scale=3, elem_classes="panel-card"):
+        with gr.Column(scale=2, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(
                 animate_flow(ex01_simple.FLOW_STEPS, 0), elem_classes="flow-box"
@@ -829,7 +831,7 @@ def build_ex02_tab(cfg_state):
     state = gr.State({"history": []})
 
     with gr.Row(equal_height=False):
-        with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
+        with gr.Column(scale=2, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
             gr.Markdown(ex02_memory.CONCEPT)
 
@@ -840,7 +842,7 @@ def build_ex02_tab(cfg_state):
                 label="System Prompt (persona) — edit me!",
                 lines=2,
             )
-            chatbot   = gr.Chatbot(height=300, label="", show_label=False)
+            chatbot   = gr.Chatbot(height=480, label="", show_label=False)
             msg_input = gr.Textbox(placeholder="Type a message...", show_label=False, lines=1)
             with gr.Row():
                 send_btn  = gr.Button("Send", variant="primary", elem_classes="send-btn")
@@ -850,7 +852,7 @@ def build_ex02_tab(cfg_state):
             turn_count = gr.Textbox(label="", value="💬 Turns: 0", interactive=False,
                                     elem_classes="latency-box", max_lines=1)
 
-        with gr.Column(scale=3, elem_classes="panel-card"):
+        with gr.Column(scale=2, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(animate_flow(ex02_memory.FLOW_STEPS, 0), elem_classes="flow-box")
 
@@ -887,13 +889,13 @@ def build_ex03_tab(cfg_state):
     state = gr.State({"history": []})
 
     with gr.Row(equal_height=False):
-        with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
+        with gr.Column(scale=2, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
             gr.Markdown(ex03_tools.CONCEPT)
 
         with gr.Column(scale=4, elem_classes="panel-card"):
             gr.Markdown("### ▶ Try It Live", elem_classes="section-label")
-            chatbot   = gr.Chatbot(height=320, label="", show_label=False)
+            chatbot   = gr.Chatbot(height=480, label="", show_label=False)
             msg_input = gr.Textbox(
                 placeholder="Try: 'What is 1234 * 5678?' or 'Weather in Tokyo?'",
                 show_label=False, lines=1
@@ -906,7 +908,7 @@ def build_ex03_tab(cfg_state):
             with gr.Accordion("🔧 Tool Calls Log", open=True):
                 tool_log = gr.JSON(label="", value=[])
 
-        with gr.Column(scale=3, elem_classes="panel-card"):
+        with gr.Column(scale=2, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(animate_flow(ex03_tools.FLOW_STEPS, 0), elem_classes="flow-box")
 
@@ -947,7 +949,7 @@ def build_ex03_tab(cfg_state):
 
 def build_ex04_tab(cfg_state):
     with gr.Row(equal_height=False):
-        with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
+        with gr.Column(scale=2, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
             gr.Markdown(ex04_react.CONCEPT)
 
@@ -967,7 +969,7 @@ def build_ex04_tab(cfg_state):
             latency = gr.Textbox(label="", value="⏱ Latency: —", interactive=False,
                                  elem_classes="latency-box", max_lines=1)
 
-        with gr.Column(scale=3, elem_classes="panel-card"):
+        with gr.Column(scale=2, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(animate_flow(ex04_react.FLOW_STEPS, 0), elem_classes="flow-box")
 
@@ -998,7 +1000,7 @@ def build_ex04_tab(cfg_state):
 
 def build_ex05_tab(cfg_state):
     with gr.Row(equal_height=False):
-        with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
+        with gr.Column(scale=2, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
             gr.Markdown(ex05_multi_agent.CONCEPT)
 
@@ -1017,7 +1019,7 @@ def build_ex05_tab(cfg_state):
             latency = gr.Textbox(label="", value="⏱ Latency: —", interactive=False,
                                  elem_classes="latency-box", max_lines=1)
 
-        with gr.Column(scale=3, elem_classes="panel-card"):
+        with gr.Column(scale=2, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(animate_flow(ex05_multi_agent.FLOW_STEPS, 0), elem_classes="flow-box")
 
@@ -1048,7 +1050,7 @@ def build_ex06_tab(cfg_state):
     state = gr.State({"history": []})
 
     with gr.Row(equal_height=False):
-        with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
+        with gr.Column(scale=2, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
             gr.Markdown(ex06_streaming.CONCEPT)
 
@@ -1056,7 +1058,7 @@ def build_ex06_tab(cfg_state):
             gr.Markdown("### ▶ Try It Live", elem_classes="section-label")
             gr.Markdown("_Watch tokens arrive one by one — the reply builds in real time._",
                         elem_classes="section-label")
-            chatbot   = gr.Chatbot(height=320, label="", show_label=False)
+            chatbot   = gr.Chatbot(height=480, label="", show_label=False)
             msg_input = gr.Textbox(placeholder="Type a message...", show_label=False, lines=1)
             with gr.Row():
                 send_btn  = gr.Button("Send", variant="primary", elem_classes="send-btn")
@@ -1067,7 +1069,7 @@ def build_ex06_tab(cfg_state):
                 chunk_count = gr.Textbox(label="", value="📦 Chunks: 0", interactive=False,
                                          elem_classes="latency-box", max_lines=1)
 
-        with gr.Column(scale=3, elem_classes="panel-card"):
+        with gr.Column(scale=2, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(animate_flow(ex06_streaming.FLOW_STEPS, 0), elem_classes="flow-box")
 
@@ -1120,7 +1122,7 @@ def build_ex06_tab(cfg_state):
 
 def build_ex07_tab(cfg_state):
     with gr.Row(equal_height=False):
-        with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
+        with gr.Column(scale=2, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
             gr.Markdown(ex07_structured.CONCEPT)
 
@@ -1151,7 +1153,7 @@ def build_ex07_tab(cfg_state):
             with gr.Accordion("🔍 Raw JSON", open=False):
                 raw_json = gr.JSON(label="")
 
-        with gr.Column(scale=3, elem_classes="panel-card"):
+        with gr.Column(scale=2, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(animate_flow(ex07_structured.FLOW_STEPS, 0), elem_classes="flow-box")
 
@@ -1195,7 +1197,7 @@ def build_ex07_tab(cfg_state):
 
 def build_ex08_tab(cfg_state):
     with gr.Row(equal_height=False):
-        with gr.Column(scale=3, elem_classes="panel-card learn-panel"):
+        with gr.Column(scale=2, elem_classes="panel-card learn-panel"):
             gr.Markdown("### 📖 Learn", elem_classes="section-label")
             gr.Markdown(ex08_rag.CONCEPT)
             gr.Markdown("### 📄 Document Store")
@@ -1205,7 +1207,7 @@ def build_ex08_tab(cfg_state):
 
         with gr.Column(scale=4, elem_classes="panel-card"):
             gr.Markdown("### ▶ Try It Live", elem_classes="section-label")
-            chatbot   = gr.Chatbot(height=300, label="", show_label=False)
+            chatbot   = gr.Chatbot(height=480, label="", show_label=False)
             msg_input = gr.Textbox(
                 placeholder="Try: 'How many leave days do I get?'",
                 show_label=False, lines=1
@@ -1218,7 +1220,7 @@ def build_ex08_tab(cfg_state):
             with gr.Accordion("📚 Retrieved Documents", open=True):
                 sources_box = gr.Markdown("_Ask a question to see which docs were retrieved._")
 
-        with gr.Column(scale=3, elem_classes="panel-card"):
+        with gr.Column(scale=2, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(animate_flow(ex08_rag.FLOW_STEPS, 0), elem_classes="flow-box")
 
