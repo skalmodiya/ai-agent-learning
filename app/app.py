@@ -266,9 +266,8 @@ p, span, li, td, th, label, div, h1, h2, h3, h4 {
 .panel-card {
   background: var(--bg-card) !important;
   border: 1px solid var(--border-muted) !important;
-  border-radius: var(--radius-lg) !important;
-  padding: 20px 22px !important;
-  min-height: 600px !important;
+  border-radius: var(--radius-md) !important;
+  padding: 12px 14px !important;
   height: 100% !important;
   box-shadow: var(--shadow-card) !important;
   color: var(--text-primary) !important;
@@ -281,13 +280,13 @@ p, span, li, td, th, label, div, h1, h2, h3, h4 {
    ══════════════════════════════════════════════ */
 .section-label > div > p,
 .section-label .prose p {
-  font-size: 11px !important;
+  font-size: 10.5px !important;
   font-weight: 700 !important;
-  letter-spacing: 1.5px !important;
+  letter-spacing: 1.2px !important;
   text-transform: uppercase !important;
   color: var(--accent-blue) !important;
-  margin: 0 0 16px 0 !important;
-  padding-bottom: 10px !important;
+  margin: 0 0 8px 0 !important;
+  padding-bottom: 6px !important;
   border-bottom: 1px solid var(--border-muted) !important;
 }
 
@@ -299,14 +298,14 @@ p, span, li, td, th, label, div, h1, h2, h3, h4 {
 
 .learn-panel .prose h2 {
   color: var(--text-primary) !important;
-  font-size: 16px !important; font-weight: 700 !important;
-  margin: 0 0 12px 0 !important; padding-bottom: 10px !important;
+  font-size: 14px !important; font-weight: 700 !important;
+  margin: 0 0 8px 0 !important; padding-bottom: 6px !important;
   border-bottom: 1px solid var(--border-muted) !important;
 }
 .learn-panel .prose h3 {
   color: var(--accent-purple) !important;
-  font-size: 13px !important; font-weight: 600 !important;
-  margin: 20px 0 8px 0 !important;
+  font-size: 12px !important; font-weight: 600 !important;
+  margin: 12px 0 4px 0 !important;
 }
 .learn-panel .prose strong { color: var(--text-primary) !important; font-weight: 600 !important; }
 .learn-panel .prose em { color: var(--accent-cyan) !important; font-style: italic !important; }
@@ -320,8 +319,8 @@ p, span, li, td, th, label, div, h1, h2, h3, h4 {
 }
 .learn-panel .prose pre {
   background: var(--code-bg) !important; border: 1px solid var(--border) !important;
-  border-radius: var(--radius-md) !important; padding: 16px 18px !important;
-  overflow-x: auto !important; margin: 12px 0 !important;
+  border-radius: var(--radius-md) !important; padding: 10px 12px !important;
+  overflow-x: auto !important; margin: 6px 0 !important;
 }
 .learn-panel .prose pre code {
   background: transparent !important; color: var(--code-text) !important;
@@ -345,8 +344,8 @@ p, span, li, td, th, label, div, h1, h2, h3, h4 {
   border-top: 1px solid var(--border-muted) !important;
 }
 .learn-panel .prose tr:hover td { background: var(--bg-elevated) !important; }
-.learn-panel .prose ul, .learn-panel .prose ol { padding-left: 20px !important; }
-.learn-panel .prose li { color: var(--text-secondary) !important; margin: 5px 0 !important; }
+.learn-panel .prose ul, .learn-panel .prose ol { padding-left: 16px !important; }
+.learn-panel .prose li { color: var(--text-secondary) !important; margin: 2px 0 !important; }
 
 /* ══════════════════════════════════════════════
    CHATBOT
@@ -655,15 +654,13 @@ button.secondary:hover {
    HOW IT WORKS — FLOW BOX
    ══════════════════════════════════════════════ */
 .flow-box, .flow-box > div {
-  background: var(--bg-input) !important;
-  border: 1px solid var(--border-muted) !important;
-  border-radius: var(--radius-md) !important;
-  padding: 18px 20px !important;
-  min-height: 300px !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
 }
 .flow-box .prose, .flow-box .prose * {
-  font-size: 13.5px !important;
-  line-height: 1.8 !important;
+  font-size: 12.5px !important;
+  line-height: 1.55 !important;
   color: var(--text-secondary) !important;
 }
 .flow-box .prose code,
@@ -674,14 +671,15 @@ button.secondary:hover {
   border: 1px solid var(--border-muted) !important;
   border-radius: var(--radius-sm) !important;
   font-family: 'Fira Code', Consolas, monospace !important;
-  font-size: 12px !important;
-  padding: 3px 9px !important;
+  font-size: 11.5px !important;
+  padding: 2px 7px !important;
 }
-.flow-box .prose pre { padding: 12px 16px !important; overflow-x: auto !important; margin: 8px 0 !important; }
+.flow-box .prose pre { padding: 8px 12px !important; overflow-x: auto !important; margin: 4px 0 !important; }
 .flow-box .prose pre code { padding: 0 !important; border: none !important; background: transparent !important; }
 .flow-box .prose strong { color: var(--accent-blue) !important; font-weight: 700 !important; }
 .flow-box .prose em     { color: var(--text-muted) !important; font-style: italic !important; }
-.flow-box .prose hr     { border-color: var(--border-muted) !important; margin: 12px 0 !important; }
+.flow-box .prose hr     { border-color: var(--border-muted) !important; margin: 6px 0 !important; }
+.flow-box .prose p      { margin: 4px 0 !important; }
 
 /* ══════════════════════════════════════════════
    ACCORDION
@@ -694,18 +692,17 @@ details, .accordion {
 }
 details summary, .accordion summary {
   color: var(--text-secondary) !important;
-  font-size: 13px !important; font-weight: 500 !important;
-  padding: 10px 14px !important; cursor: pointer !important;
+  font-size: 12.5px !important; font-weight: 500 !important;
+  padding: 7px 12px !important; cursor: pointer !important;
 }
 details summary:hover {
   color: var(--text-primary) !important;
   background: var(--bg-card) !important;
 }
-/* content inside accordion */
 details > div, .accordion > div {
   background: var(--bg-elevated) !important;
   color: var(--text-secondary) !important;
-  padding: 12px 14px !important;
+  padding: 8px 12px !important;
 }
 
 /* ══════════════════════════════════════════════
@@ -818,9 +815,33 @@ details > div, .accordion > div {
 .theme-btn-dark button { background: var(--btn-primary) !important; border-color: var(--btn-primary) !important; color: #fff !important; }
 
 /* TAB CONTENT */
-.tabitem { padding: 10px !important; }
-.gradio-row { gap: 10px !important; align-items: stretch !important; }
+.tabitem { padding: 6px !important; }
+.gradio-row { gap: 6px !important; align-items: stretch !important; }
 .gradio-container > .main > .wrap { padding: 0 !important; }
+
+/* Kill Gradio's excessive internal block gaps */
+.gradio-column, .gradio-column > .gap,
+.block, .form { gap: 6px !important; }
+
+/* Tighten Gradio block padding globally */
+.block { padding: 0 !important; margin: 0 !important; }
+
+/* Accordion: tighter header + content */
+details summary, .accordion summary {
+  padding: 7px 12px !important;
+}
+details > div, .accordion > div {
+  padding: 8px 12px !important;
+}
+
+/* Latency/stat boxes — shrink */
+.latency-box textarea {
+  padding: 3px 10px !important;
+  font-size: 11.5px !important;
+}
+
+/* Chatbot height — was 480, trim slightly */
+.chatbot { min-height: 0 !important; }
 
 /* ══════════════════════════════════════════════
    PERSONA TEXTBOX (ex02)
