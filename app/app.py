@@ -528,7 +528,11 @@ label span, .label-wrap span {
 .gradio-dropdown input {
   color: var(--text-primary) !important;
   background: transparent !important;
-  font-size: 13.5px !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
 }
 
 /* Placeholder / subdued text */
@@ -1450,7 +1454,7 @@ def build_app():
                 show_label=True,
                 interactive=False,
                 scale=2,
-                min_width=130,
+                min_width=160,
                 elem_classes="topbar-input",
             )
             model_dd = gr.Dropdown(
@@ -1459,8 +1463,8 @@ def build_app():
                 label="🤖 Model",
                 show_label=True,
                 interactive=False,
-                scale=2,
-                min_width=160,
+                scale=3,
+                min_width=220,
                 elem_classes="topbar-input",
             )
             cfg_status = gr.Textbox(
