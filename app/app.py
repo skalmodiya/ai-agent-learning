@@ -938,7 +938,7 @@ def build_ex01_tab(cfg_state):
                 clear_btn = gr.Button("Clear", variant="secondary")
             latency   = gr.Textbox(label="", value="⏱ Latency: —", interactive=False,
                                    elem_classes="latency-box", max_lines=1)
-            with gr.Accordion("🔍 Raw JSON (last request/response)", open=False):
+            with gr.Accordion("🔍 Raw JSON (last request/response)", open=True):
                 raw_json = gr.JSON(label="")
 
         # ── Panel 3: How It Works ──
@@ -1315,7 +1315,7 @@ def build_ex07_tab(cfg_state):
                     pros_box     = gr.Textbox(label="Pros",     interactive=False)
                     cons_box     = gr.Textbox(label="Cons",     interactive=False)
 
-            with gr.Accordion("🔍 Raw JSON", open=False):
+            with gr.Accordion("🔍 Raw JSON", open=True):
                 raw_json = gr.JSON(label="")
 
         with gr.Column(scale=2, elem_classes="panel-card"):
