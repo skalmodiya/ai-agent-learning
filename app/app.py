@@ -634,69 +634,89 @@ details > div, .accordion > div {
    UNIFIED TOP BAR
    ══════════════════════════════════════════════ */
 
-/* Branding block (pure HTML, floats left of the Gradio row) */
-.topbar-brand {
+/* Gradio Row renders: .gradio-row > .gap (flex container) > children */
+/* Target only the .gap inside our topbar row to set flex layout */
+.topbar-row > .gap {
   display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
+  flex-wrap: nowrap !important;
   gap: 10px !important;
-  background: var(--bg-surface) !important;
-  border-bottom: none !important;
-  padding: 10px 16px 6px 16px !important;
+  width: 100% !important;
 }
-.topbar-logo {
-  width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
-  background: linear-gradient(135deg,#2563eb,#7c3aed);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-}
-.topbar-title { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
-.topbar-sub   { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
-
-/* The Gradio row holding inputs + theme buttons */
 .topbar-row {
   background: var(--bg-surface) !important;
   border-bottom: 1px solid var(--border-muted) !important;
-  padding: 6px 16px 8px 16px !important;
-  align-items: center !important;
-  gap: 6px !important;
-  flex-wrap: nowrap !important;
+  padding: 0 20px !important;
+  min-height: 64px !important;
 }
-/* Kill label height — inputs have no label in topbar */
-.topbar-input .label-wrap span { display: none !important; }
-.topbar-input .label-wrap { min-height: 0 !important; height: 0 !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; }
+
+/* Branding HTML block */
+.topbar-brand-col { flex: 0 0 auto !important; padding-right: 14px !important; border-right: 1px solid var(--border-muted) !important; align-self: center !important; }
+.topbar-brand { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.topbar-logo  { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; background: linear-gradient(135deg,#2563eb,#7c3aed); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.topbar-title { font-size: 13px; font-weight: 700; color: var(--text-primary) !important; letter-spacing: -0.2px; line-height: 1.2; }
+.topbar-sub   { font-size: 10px; color: var(--text-faint) !important; margin-top: 1px; }
+
+/* Topbar input fields — compact labels + 34px input height */
+.topbar-input { align-self: center !important; }
+.topbar-input .label-wrap span,
+.topbar-input label span {
+  font-size: 10px !important; font-weight: 700 !important; color: var(--text-faint) !important;
+  text-transform: uppercase !important; letter-spacing: 0.5px !important;
+}
 .topbar-input textarea,
-.topbar-input input { padding: 6px 10px !important; font-size: 13px !important; }
-/* Dropdowns in topbar — ensure wrap is visible */
-.topbar-input .wrap, .topbar-input .wrap-inner { min-height: 36px !important; }
-.topbar-status .label-wrap { min-height: 0 !important; height: 0 !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; }
-.topbar-status textarea { font-size: 12px !important; font-weight: 600 !important; padding: 6px 8px !important; text-align: center !important; }
-
-/* Status colours */
-.config-status-ok  textarea { color: #56d364 !important; background: rgba(86,211,100,0.08) !important; border-color: rgba(86,211,100,0.3) !important; }
-.config-status-err textarea { color: #ff7b72 !important; background: rgba(255,123,114,0.08) !important; border-color: rgba(255,123,114,0.3) !important; }
-.config-status-warn textarea{ color: #ffa657 !important; background: rgba(255,166,87,0.08)  !important; border-color: rgba(255,166,87,0.3)  !important; }
-
-/* Theme icon buttons — small squares */
-.theme-btn, .theme-btn > div { width: auto !important; min-width: 0 !important; flex-shrink: 0 !important; }
-.theme-btn button {
-  background: var(--bg-elevated) !important;
-  color: var(--text-muted) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
-  padding: 4px 8px !important;
-  font-size: 15px !important;
-  line-height: 1 !important;
-  width: 34px !important; height: 34px !important;
-  min-width: 34px !important;
-  transition: all 0.15s !important;
+.topbar-input input[type="text"],
+.topbar-input input[type="password"] {
+  height: 34px !important; min-height: 34px !important;
+  padding: 5px 10px !important; font-size: 13px !important;
 }
-.theme-btn button:hover { border-color: var(--border-active) !important; background: var(--bg-card) !important; }
-.theme-btn-dark button  { background: var(--btn-primary) !important; border-color: var(--btn-primary) !important; }
+.topbar-input .wrap,
+.topbar-input .wrap-inner {
+  min-height: 34px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--bg-input) !important;
+}
 
-/* TAB CONTENT PADDING */
-.tabitem { padding: 10px 10px 0 10px !important; }
-.tabitem > div { gap: 10px !important; }
-.tabitem > .gap, .tabitem > div > .gap { gap: 10px !important; }
+/* Status pill — no label, coloured border */
+.topbar-status { align-self: center !important; flex: 0 0 auto !important; }
+.topbar-status .label-wrap { display: none !important; }
+.topbar-status textarea {
+  height: 34px !important; min-height: 34px !important;
+  font-size: 11px !important; font-weight: 700 !important;
+  padding: 5px 10px !important; text-align: center !important;
+  border-radius: var(--radius-md) !important;
+}
+.config-status-ok   textarea { color: #56d364 !important; background: rgba(86,211,100,0.08) !important; border-color: rgba(86,211,100,0.3) !important; }
+.config-status-err  textarea { color: #ff7b72 !important; background: rgba(255,123,114,0.08) !important; border-color: rgba(255,123,114,0.3) !important; }
+.config-status-warn textarea { color: #ffa657 !important; background: rgba(255,166,87,0.08)  !important; border-color: rgba(255,166,87,0.3)  !important; }
+
+/* Theme column container */
+.theme-col { flex: 0 0 auto !important; align-self: center !important; padding: 0 !important; }
+.theme-label { font-size: 10px !important; font-weight: 700 !important; color: var(--text-faint) !important; text-transform: uppercase !important; text-align: center !important; margin-bottom: 4px !important; }
+/* Theme button row — Gradio Row inner .gap must be horizontal */
+.theme-btn-row > .gap {
+  display: flex !important; flex-direction: row !important;
+  gap: 4px !important; flex-wrap: nowrap !important;
+  justify-content: center !important; align-items: center !important;
+  padding: 0 !important;
+}
+/* Each button's Gradio wrapper */
+.theme-btn { flex: 0 0 32px !important; min-width: 32px !important; }
+.theme-btn button {
+  width: 32px !important; height: 32px !important; min-width: 32px !important;
+  padding: 0 !important; font-size: 16px !important; line-height: 1 !important;
+  border-radius: 7px !important; display: flex !important;
+  align-items: center !important; justify-content: center !important;
+  background: var(--bg-elevated) !important; color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important; transition: all 0.15s !important; cursor: pointer !important;
+}
+.theme-btn button:hover { border-color: var(--border-active) !important; background: var(--bg-card) !important; color: var(--text-primary) !important; }
+.theme-btn-dark button { background: var(--btn-primary) !important; border-color: var(--btn-primary) !important; color: #fff !important; }
+
+/* TAB CONTENT */
+.tabitem { padding: 10px !important; }
 .gradio-row { gap: 10px !important; align-items: stretch !important; }
 .gradio-container > .main > .wrap { padding: 0 !important; }
 
@@ -731,7 +751,7 @@ details > div, .accordion > div {
 
 """
 
-# JS that runs once on page load — applies saved theme
+# JS that runs once on page load — applies saved theme AND restores saved API key
 THEME_JS = """
 function applyTheme(t) {
   var resolved = t === 'system'
@@ -743,6 +763,19 @@ function applyTheme(t) {
 var saved = localStorage.getItem('ai-agent-theme') || 'dark';
 applyTheme(saved);
 setTimeout(function(){ applyTheme(localStorage.getItem('ai-agent-theme') || 'dark'); }, 800);
+
+// Restore saved API key into the password input and fire a change event
+// so Gradio's on_api_key handler unlocks the provider/model dropdowns.
+setTimeout(function() {
+  var savedKey = localStorage.getItem('ai-agent-key') || '';
+  if (!savedKey) return;
+  var inputs = document.querySelectorAll('input[type="password"]');
+  inputs.forEach(function(inp) {
+    var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    nativeInputValueSetter.call(inp, savedKey);
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}, 1200);
 """
 
 
@@ -1297,39 +1330,39 @@ def build_app():
         fill_width=True,
     ) as app:
 
-        # ── Single unified top bar: logo | config inputs | theme buttons ──
+        # ── Top bar: logo | API key | Provider | Model | status | theme ──
         cfg_state = gr.State({
             "api_key":     "",
             "provider_id": ex_config.DEFAULT_PROVIDER,
             "model":       ex_config.get_default_model(ex_config.DEFAULT_PROVIDER),
         })
 
-        # Branding (pure HTML, no height wasted)
-        gr.HTML("""
+        with gr.Row(elem_classes="topbar-row"):
+            # Branding column (pure HTML, auto-width)
+            gr.HTML("""
 <div class="topbar-brand">
   <div class="topbar-logo">🤖</div>
   <div>
-    <div class="topbar-title">AI Agent Learning Platform</div>
-    <div class="topbar-sub">8 exercises · Simple → RAG</div>
+    <div class="topbar-title">AI Agent Learning</div>
+    <div class="topbar-sub">Simple → RAG</div>
   </div>
 </div>
-""")
+""", elem_classes="topbar-brand-col")
 
-        # Config + theme in one compact row
-        with gr.Row(elem_classes="topbar-row"):
             api_key_input = gr.Textbox(
-                placeholder="🔑 API Key",
-                show_label=False,
+                placeholder="API Key",
+                show_label=True,
+                label="🔑 Key",
                 type="password",
                 scale=3,
-                min_width=200,
+                min_width=180,
                 elem_classes="topbar-input",
             )
             provider_dd = gr.Dropdown(
                 choices=ex_config.PROVIDER_LABELS,
                 value=None,
-                label="Provider",
-                show_label=False,
+                label="🌐 Provider",
+                show_label=True,
                 interactive=False,
                 scale=2,
                 min_width=130,
@@ -1338,24 +1371,27 @@ def build_app():
             model_dd = gr.Dropdown(
                 choices=[],
                 value=None,
-                label="Model",
-                show_label=False,
+                label="🤖 Model",
+                show_label=True,
                 interactive=False,
                 scale=2,
-                min_width=170,
+                min_width=160,
                 elem_classes="topbar-input",
             )
             cfg_status = gr.Textbox(
-                value="⚠ API key",
+                value="⚠ Enter key",
                 show_label=False,
                 interactive=False,
                 scale=1,
-                min_width=110,
+                min_width=100,
                 elem_classes="config-status config-status-warn topbar-status",
             )
-            theme_dark_btn   = gr.Button("🌙",  variant="secondary", size="sm", scale=0, min_width=36, elem_classes="theme-btn theme-btn-dark")
-            theme_light_btn  = gr.Button("☀️",  variant="secondary", size="sm", scale=0, min_width=36, elem_classes="theme-btn theme-btn-light")
-            theme_system_btn = gr.Button("💻",  variant="secondary", size="sm", scale=0, min_width=36, elem_classes="theme-btn theme-btn-system")
+            with gr.Column(scale=0, min_width=112, elem_classes="theme-col"):
+                gr.HTML('<div class="theme-label">Theme</div>')
+                with gr.Row(elem_classes="theme-btn-row"):
+                    theme_dark_btn   = gr.Button("🌙", variant="secondary", size="sm", min_width=34, elem_classes="theme-btn theme-btn-dark")
+                    theme_light_btn  = gr.Button("☀️", variant="secondary", size="sm", min_width=34, elem_classes="theme-btn theme-btn-light")
+                    theme_system_btn = gr.Button("💻", variant="secondary", size="sm", min_width=34, elem_classes="theme-btn theme-btn-system")
 
         # When API key is entered → unlock provider dropdown, set default
         def on_api_key(key, cfg):
@@ -1381,6 +1417,12 @@ def build_app():
             on_api_key,
             inputs=[api_key_input, cfg_state],
             outputs=[provider_dd, model_dd, cfg_status, cfg_state],
+        )
+        # Save key to localStorage whenever it changes (clear on empty)
+        api_key_input.change(
+            fn=None,
+            inputs=[api_key_input],
+            js="(k) => { if(k && k.trim()) localStorage.setItem('ai-agent-key', k.trim()); else localStorage.removeItem('ai-agent-key'); }",
         )
 
         # When provider changes → refresh model list, pick first model
