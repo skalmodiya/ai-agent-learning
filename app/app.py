@@ -390,6 +390,70 @@ p, span, li, td, th, label, div, h1, h2, h3, h4 {
 .bubble.user-row, .user-row.bubble,
 .message-bubble-border.user { background-color: #1c3d6e !important; color: #f0f6fc !important; }
 .message-bubble-border.user *, .bubble.user-row * { color: #f0f6fc !important; }
+/* Force bot bubble dark */
+.message-bubble-border.bot, .bubble.bot-row, .bot-row.bubble {
+  background-color: var(--bot-bubble) !important; color: var(--text-primary) !important;
+}
+/* Code / pre blocks inside ANY chatbot bubble — dark bg, light text */
+.message-bubble-border pre,
+.message-bubble-border code,
+.bubble.user-row pre, .bubble.user-row code,
+.bubble.bot-row  pre, .bubble.bot-row  code,
+[data-testid="bot"] pre,  [data-testid="bot"] code,
+[data-testid="user"] pre, [data-testid="user"] code,
+.chatbot .bot  pre, .chatbot .bot  code,
+.chatbot .user pre, .chatbot .user code {
+  background: #161b22 !important;
+  color: #79c0ff !important;
+  border: 1px solid #30404f !important;
+  border-radius: 6px !important;
+  font-family: 'Fira Code', Consolas, monospace !important;
+  font-size: 12.5px !important;
+}
+.message-bubble-border pre,
+[data-testid="bot"] pre, [data-testid="user"] pre,
+.chatbot .bot pre, .chatbot .user pre {
+  padding: 12px 16px !important;
+  overflow-x: auto !important;
+  display: block !important;
+  white-space: pre !important;
+}
+.message-bubble-border pre code,
+[data-testid="bot"] pre code, [data-testid="user"] pre code,
+.chatbot .bot pre code, .chatbot .user pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  color: #79c0ff !important;
+}
+/* inline code gets slightly different treatment */
+.message-bubble-border p code,
+[data-testid="bot"] p code, [data-testid="user"] p code {
+  background: #21293a !important;
+  color: #ffa657 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+}
+/* Light theme: bot bubble and code blocks */
+[data-theme="light"] .message-bubble-border.bot,
+[data-theme="light"] .bubble.bot-row {
+  background-color: #f6f8fa !important; color: #1f2328 !important;
+}
+[data-theme="light"] .message-bubble-border pre,
+[data-theme="light"] .message-bubble-border code,
+[data-theme="light"] [data-testid="bot"] pre,
+[data-theme="light"] [data-testid="bot"] code,
+[data-theme="light"] .chatbot .bot pre,
+[data-theme="light"] .chatbot .bot code {
+  background: #eaeef2 !important;
+  color: #0550ae !important;
+  border-color: #d0d7de !important;
+}
+[data-theme="light"] .message-bubble-border p code,
+[data-theme="light"] [data-testid="bot"] p code {
+  background: #eaeef2 !important; color: #953800 !important;
+}
 /* Light theme user bubble */
 [data-theme="light"] .bubble.user-row,
 [data-theme="light"] .user-row.bubble,
