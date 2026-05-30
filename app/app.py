@@ -342,54 +342,95 @@ label span, .label-wrap span {
 }
 
 /* ══════════════════════════════════════════════
-   DROPDOWNS (Gradio select elements)
+   DROPDOWNS — Gradio uses svelte-select internally
+   Class names from Dropdown--Uz_kS2s.css:
+   .wrap .wrap-inner .secondary-wrap .options .item .active .icon-wrap
    ══════════════════════════════════════════════ */
-.gradio-dropdown,
-.gradio-dropdown > div,
-.gradio-dropdown .wrap {
+
+/* Outer container */
+.gradio-dropdown .wrap,
+.gradio-dropdown .wrap-inner {
   background: var(--bg-input) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-md) !important;
+  min-height: 38px !important;
 }
-/* The selected value text */
-.gradio-dropdown .wrap .secondary-wrap,
-.gradio-dropdown input,
-.gradio-dropdown .svelte-select,
-.gradio-dropdown .value-container span,
-.gradio-dropdown .wrap span {
+.gradio-dropdown .wrap:focus-within {
+  border-color: var(--border-active) !important;
+  box-shadow: 0 0 0 3px var(--glow-blue) !important;
+}
+
+/* Selected value text */
+.gradio-dropdown .secondary-wrap,
+.gradio-dropdown .secondary-wrap span,
+.gradio-dropdown .wrap-inner span,
+.gradio-dropdown input {
   color: var(--text-primary) !important;
   background: transparent !important;
+  font-size: 13.5px !important;
 }
-/* Dropdown list container */
-.gradio-dropdown .options,
-.gradio-dropdown ul,
-.gradio-dropdown .listbox,
-.svelte-select-list {
+
+/* Placeholder / subdued text */
+.gradio-dropdown .subdued { color: var(--text-faint) !important; }
+
+/* Chevron icon */
+.gradio-dropdown .icon-wrap svg { color: var(--text-muted) !important; fill: var(--text-muted) !important; }
+
+/* THE DROPDOWN LIST — this is the white box in the screenshot */
+.gradio-dropdown .options {
   background: var(--bg-card) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-md) !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+  padding: 4px !important;
+  z-index: 9999 !important;
+  overflow: hidden !important;
 }
-/* Each option item */
-.gradio-dropdown li,
-.gradio-dropdown .item,
-.gradio-dropdown .option,
-.svelte-select-list li {
+
+/* Each option row */
+.gradio-dropdown .options .item,
+.gradio-dropdown .options .inner-item {
   color: var(--text-secondary) !important;
   background: transparent !important;
-  padding: 8px 14px !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 12px !important;
+  font-size: 13.5px !important;
+  cursor: pointer !important;
+  transition: background 0.1s, color 0.1s !important;
 }
-.gradio-dropdown li:hover,
-.gradio-dropdown .item:hover,
-.gradio-dropdown .option:hover,
-.gradio-dropdown .active,
-.svelte-select-list li:hover {
+
+/* Hover + active (keyboard-focused) option */
+.gradio-dropdown .options .item:hover,
+.gradio-dropdown .options .item.active,
+.gradio-dropdown .options .inner-item:hover {
   background: var(--bg-elevated) !important;
   color: var(--text-primary) !important;
 }
-/* Chevron / arrow icon */
-.gradio-dropdown svg, .gradio-dropdown .icon { color: var(--text-muted) !important; }
+
+/* Disabled state */
+.gradio-dropdown[disabled] .wrap,
+.gradio-dropdown .wrap[disabled] {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
+
+
+/* Light theme: dropdown list stays white with dark text */
+[data-theme="light"] .gradio-dropdown .options {
+  background: #ffffff !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+}
+[data-theme="light"] .gradio-dropdown .options .item,
+[data-theme="light"] .gradio-dropdown .options .inner-item {
+  color: var(--text-secondary) !important;
+}
+[data-theme="light"] .gradio-dropdown .options .item:hover,
+[data-theme="light"] .gradio-dropdown .options .item.active {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
 
 /* ══════════════════════════════════════════════
    BUTTONS
