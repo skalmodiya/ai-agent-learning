@@ -34,79 +34,158 @@ from exercises import (
 # ─────────────────────────────────────────────
 
 CSS = """
-/* Overall background */
-body, .gradio-container { background: #0f1117 !important; }
+/* ── Base ─────────────────────────────────────────── */
+body, .gradio-container, .main, footer { background: #0d1117 !important; }
+.gradio-container { max-width: 100% !important; padding: 0 24px !important; }
 
-/* Tab styling */
+/* ── Header ───────────────────────────────────────── */
+.app-header { padding: 24px 0 8px 0; border-bottom: 1px solid #21262d; margin-bottom: 16px; }
+.app-header h1 { font-size: 26px !important; font-weight: 700 !important; color: #e6edf3 !important; margin: 0 !important; }
+.app-header p  { color: #8b949e !important; font-size: 14px !important; margin: 4px 0 0 0 !important; }
+
+/* ── Tabs ─────────────────────────────────────────── */
+.tab-nav { border-bottom: 1px solid #21262d !important; background: transparent !important; }
 .tab-nav button {
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    color: #a0aec0 !important;
-    border-radius: 8px 8px 0 0 !important;
-    padding: 8px 16px !important;
+    font-size: 13px !important; font-weight: 500 !important;
+    color: #8b949e !important; background: transparent !important;
+    border: none !important; border-bottom: 2px solid transparent !important;
+    padding: 10px 18px !important; margin-bottom: -1px !important;
+    transition: all 0.2s !important;
 }
+.tab-nav button:hover  { color: #c9d1d9 !important; }
 .tab-nav button.selected {
-    color: #63b3ed !important;
-    border-bottom: 2px solid #63b3ed !important;
-    background: #1a202c !important;
+    color: #58a6ff !important;
+    border-bottom: 2px solid #58a6ff !important;
+    background: transparent !important;
 }
 
-/* Panel cards */
+/* ── Panel cards ──────────────────────────────────── */
 .panel-card {
-    background: #1a202c;
-    border: 1px solid #2d3748;
-    border-radius: 12px;
-    padding: 16px;
+    background: #161b22 !important;
+    border: 1px solid #21262d !important;
+    border-radius: 10px !important;
+    padding: 20px !important;
 }
 
-/* Flow diagram — monospace box */
-.flow-box textarea, .flow-box .prose {
-    font-family: 'Fira Code', 'Consolas', monospace !important;
-    font-size: 13px !important;
-    line-height: 1.7 !important;
+/* ── Section labels (LEARN / TRY IT LIVE / HOW IT WORKS) ── */
+.section-label .prose p, .section-label p {
+    font-size: 11px !important; font-weight: 700 !important;
+    letter-spacing: 1.5px !important; text-transform: uppercase !important;
+    color: #58a6ff !important; margin: 0 0 12px 0 !important;
+}
+
+/* ── Learn panel ──────────────────────────────────── */
+.learn-panel .prose { color: #c9d1d9 !important; font-size: 14px !important; line-height: 1.8 !important; }
+.learn-panel .prose h2 { color: #58a6ff !important; font-size: 16px !important; margin-top: 0 !important; border-bottom: 1px solid #21262d; padding-bottom: 8px; }
+.learn-panel .prose h3 { color: #bc8cff !important; font-size: 14px !important; margin-top: 16px !important; }
+.learn-panel .prose p  { color: #8b949e !important; }
+
+/* inline code */
+.learn-panel .prose code {
+    background: #1f2937 !important; color: #f97316 !important;
+    padding: 2px 6px !important; border-radius: 4px !important;
+    font-family: 'Fira Code', Consolas, monospace !important; font-size: 12px !important;
+}
+
+/* code blocks in Learn */
+.learn-panel .prose pre {
+    background: #0d1117 !important; border: 1px solid #21262d !important;
+    border-radius: 8px !important; padding: 14px !important;
+    overflow-x: auto !important;
+}
+.learn-panel .prose pre code {
+    background: transparent !important; color: #7ee787 !important;
+    font-size: 12px !important; padding: 0 !important;
+}
+
+/* tables */
+.learn-panel .prose table { width: 100% !important; border-collapse: collapse !important; font-size: 13px !important; }
+.learn-panel .prose thead tr { background: #1f2937 !important; }
+.learn-panel .prose th { color: #58a6ff !important; padding: 8px 12px !important; text-align: left !important; font-weight: 600 !important; }
+.learn-panel .prose td { color: #8b949e !important; padding: 7px 12px !important; border-top: 1px solid #21262d !important; }
+.learn-panel .prose tr:hover td { background: #1f2937 !important; color: #c9d1d9 !important; }
+
+/* ── Chatbot ───────────────────────────────────────── */
+.chatbot, .chatbot > div, [data-testid="bot"], [data-testid="chatbot"] {
     background: #0d1117 !important;
-    color: #7ee787 !important;
-    border: 1px solid #30363d !important;
+    border: 1px solid #21262d !important;
     border-radius: 8px !important;
 }
+/* user bubble */
+.chatbot .message-wrap .user {
+    background: #1c3a5e !important; color: #cae8ff !important;
+    border-radius: 12px 12px 2px 12px !important;
+    border: 1px solid #1f4e8c !important; padding: 10px 14px !important;
+}
+/* bot bubble */
+.chatbot .message-wrap .bot,
+.chatbot .message-wrap .assistant {
+    background: #1a2332 !important; color: #c9d1d9 !important;
+    border-radius: 12px 12px 12px 2px !important;
+    border: 1px solid #21262d !important; padding: 10px 14px !important;
+}
 
-/* Learn panel markdown */
-.learn-panel .prose {
+/* ── Input box ────────────────────────────────────── */
+textarea, input[type="text"] {
+    background: #161b22 !important; color: #e6edf3 !important;
+    border: 1px solid #30363d !important; border-radius: 8px !important;
     font-size: 14px !important;
-    line-height: 1.8 !important;
 }
-.learn-panel .prose h2 { color: #63b3ed !important; margin-top: 0 !important; }
-.learn-panel .prose h3 { color: #9f7aea !important; }
-.learn-panel .prose code { background: #2d3748 !important; color: #fbd38d !important; }
-.learn-panel .prose table { width: 100% !important; }
-.learn-panel .prose th { background: #2d3748 !important; color: #a0aec0 !important; }
+textarea:focus, input[type="text"]:focus {
+    border-color: #58a6ff !important; outline: none !important;
+    box-shadow: 0 0 0 3px rgba(88,166,255,0.1) !important;
+}
+textarea::placeholder, input::placeholder { color: #484f58 !important; }
 
-/* Chatbot */
-.chatbot .message.user   { background: #2a4a7f !important; border-radius: 12px !important; }
-.chatbot .message.bot    { background: #1e3a2a !important; border-radius: 12px !important; }
+/* ── Buttons ──────────────────────────────────────── */
+button.primary, .send-btn {
+    background: #1f6feb !important; color: #ffffff !important;
+    border: none !important; border-radius: 8px !important;
+    font-weight: 600 !important; font-size: 13px !important;
+    padding: 8px 20px !important; transition: background 0.2s !important;
+}
+button.primary:hover, .send-btn:hover { background: #388bfd !important; }
+button.secondary {
+    background: #21262d !important; color: #8b949e !important;
+    border: 1px solid #30363d !important; border-radius: 8px !important;
+}
+button.secondary:hover { background: #30363d !important; color: #c9d1d9 !important; }
 
-/* Latency badge */
-.latency-box {
-    background: #1a202c !important;
-    border: 1px solid #2d3748 !important;
-    border-radius: 8px !important;
-    font-size: 12px !important;
-    color: #68d391 !important;
-    text-align: center !important;
+/* ── Flow / How It Works panel ────────────────────── */
+.flow-box .prose {
+    font-family: 'Fira Code', Consolas, monospace !important;
+    font-size: 12.5px !important; line-height: 1.75 !important;
+    color: #7ee787 !important;
+}
+.flow-box .prose code, .flow-box .prose pre {
+    background: #0d1117 !important; color: #7ee787 !important;
+    border: 1px solid #21262d !important; border-radius: 6px !important;
+}
+.flow-box .prose strong { color: #ffa657 !important; }
+.flow-box .prose em     { color: #bc8cff !important; }
+.flow-box .prose p      { color: #8b949e !important; }
+.flow-box .prose hr     { border-color: #21262d !important; }
+
+/* ── Latency / info badges ────────────────────────── */
+.latency-box textarea, .latency-box input {
+    background: #161b22 !important; border: 1px solid #21262d !important;
+    color: #3fb950 !important; font-size: 12px !important;
+    font-weight: 600 !important; text-align: center !important;
+    border-radius: 6px !important;
 }
 
-/* Send button */
-.send-btn { background: #2b6cb0 !important; color: white !important; border-radius: 8px !important; }
+/* ── Accordion ────────────────────────────────────── */
+.gr-accordion { background: #161b22 !important; border: 1px solid #21262d !important; border-radius: 8px !important; }
+.gr-accordion summary { color: #8b949e !important; font-size: 13px !important; }
 
-/* Section labels */
-.section-label {
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    letter-spacing: 1px !important;
-    color: #718096 !important;
-    text-transform: uppercase !important;
-    margin-bottom: 6px !important;
-}
+/* ── JSON viewer ──────────────────────────────────── */
+.json-holder { background: #0d1117 !important; color: #7ee787 !important; border-radius: 8px !important; }
+
+/* ── Scrollbars ───────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0d1117; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
 """
 
 # ─────────────────────────────────────────────
@@ -623,10 +702,23 @@ def build_ex08_tab():
 def build_app():
     with gr.Blocks(title="AI Agent Learning Platform") as app:
 
-        gr.Markdown("""
-# 🤖 AI Agent Learning Platform
-### Learn AI Agents from scratch — one concept per tab. Try each agent live.
----
+        gr.HTML("""
+<div style="padding:24px 0 16px 0; border-bottom:1px solid #21262d; margin-bottom:8px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <span style="font-size:32px;">🤖</span>
+    <div>
+      <h1 style="margin:0; font-size:24px; font-weight:700; color:#e6edf3;">AI Agent Learning Platform</h1>
+      <p style="margin:4px 0 0 0; font-size:14px; color:#8b949e;">
+        Learn AI Agents from scratch — one concept per tab &nbsp;·&nbsp; Try each agent live &nbsp;·&nbsp; Watch animated flows
+      </p>
+    </div>
+  </div>
+  <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
+    <span style="background:#1f2937; color:#58a6ff; border:1px solid #1f4e8c; border-radius:20px; padding:3px 12px; font-size:12px; font-weight:600;">8 Exercises</span>
+    <span style="background:#1f2937; color:#3fb950; border:1px solid #1a4731; border-radius:20px; padding:3px 12px; font-size:12px; font-weight:600;">Simple → RAG</span>
+    <span style="background:#1f2937; color:#bc8cff; border:1px solid #3d2060; border-radius:20px; padding:3px 12px; font-size:12px; font-weight:600;">Live Chat + Animations</span>
+  </div>
+</div>
 """)
 
         with gr.Tabs():
@@ -647,10 +739,10 @@ def build_app():
             with gr.Tab("08 · RAG"):
                 build_ex08_tab()
 
-        gr.Markdown("""
----
-<div style="text-align:center; color: #4a5568; font-size:12px;">
-AI Agent Learning Series · 8 exercises from Simple → RAG
+        gr.HTML("""
+<div style="text-align:center; color:#484f58; font-size:12px; padding:16px 0; border-top:1px solid #21262d; margin-top:8px;">
+  AI Agent Learning Series &nbsp;·&nbsp; 8 exercises from Simple → RAG &nbsp;·&nbsp;
+  <a href="https://github.com/skalmodiya/ai-agent-learning" style="color:#58a6ff; text-decoration:none;">GitHub ↗</a>
 </div>
 """)
 
