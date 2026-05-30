@@ -78,6 +78,26 @@ CSS = """
   --radius-xl:      20px;
 }
 
+/* ── Gradio internal CSS vars — DARK (maps Gradio's Svelte vars to our tokens) ── */
+/* Gradio dropdown/select/input Svelte components read THESE vars, not ours.      */
+/* Without overriding them the popup always renders with Gradio's white defaults. */
+:root {
+  --background-fill-primary:   #1c2333;
+  --background-fill-secondary: #21293a;
+  --body-text-color:           #f0f6fc;
+  --body-text-color-subdued:   #a0b3c8;
+  --input-background-fill:     #10161f;
+  --border-color-primary:      #30404f;
+  --input-border-color-focus:  #4d90fe;
+  --color-accent:              #79b8ff;
+  --shadow-drop:               0 4px 20px rgba(0,0,0,0.6);
+  --block-background-fill:     #1c2333;
+  --block-border-color:        #30404f;
+  --block-label-text-color:    #a0b3c8;
+  --panel-background-fill:     #161b22;
+  --checkbox-background-color: #10161f;
+}
+
 /* ── LIGHT THEME ────────────────────────────── */
 [data-theme="light"] {
   --bg-base:        #f6f8fa;
@@ -111,6 +131,21 @@ CSS = """
   --tab-active-bg:  rgba(9,105,218,0.06);
   --shadow-card:    0 2px 10px rgba(0,0,0,0.08);
   --shadow-btn:     0 2px 6px rgba(9,105,218,0.25);
+  /* Gradio internal vars — light overrides */
+  --background-fill-primary:   #ffffff;
+  --background-fill-secondary: #eaeef2;
+  --body-text-color:           #1f2328;
+  --body-text-color-subdued:   #57606a;
+  --input-background-fill:     #ffffff;
+  --border-color-primary:      #d0d7de;
+  --input-border-color-focus:  #0969da;
+  --color-accent:              #0550ae;
+  --shadow-drop:               0 2px 10px rgba(0,0,0,0.12);
+  --block-background-fill:     #ffffff;
+  --block-border-color:        #d0d7de;
+  --block-label-text-color:    #57606a;
+  --panel-background-fill:     #f6f8fa;
+  --checkbox-background-color: #ffffff;
 }
 
 /* ══════════════════════════════════════════════
@@ -377,21 +412,33 @@ label span, .label-wrap span {
 /* Chevron icon */
 .gradio-dropdown .icon-wrap svg { color: var(--text-muted) !important; fill: var(--text-muted) !important; }
 
-/* THE DROPDOWN LIST — this is the white box in the screenshot */
-.gradio-dropdown .options {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
+/* THE DROPDOWN LIST — this is the white box in the screenshot.
+   Gradio portals the popup to <body> so it escapes .gradio-dropdown.
+   Target it globally by class name (from Dropdown--Uz_kS2s.css). */
+.gradio-dropdown .options,
+.options.svelte-1ou0lab,
+ul.options,
+.listbox-options,
+[data-testid="dropdown-options"],
+.dropdown-options {
+  background: #1c2333 !important;
+  border: 1px solid #30404f !important;
   border-radius: var(--radius-md) !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7) !important;
   padding: 4px !important;
   z-index: 9999 !important;
   overflow: hidden !important;
+  color: #f0f6fc !important;
 }
 
 /* Each option row */
 .gradio-dropdown .options .item,
-.gradio-dropdown .options .inner-item {
-  color: var(--text-secondary) !important;
+.gradio-dropdown .options .inner-item,
+.item.svelte-1ou0lab,
+.options.svelte-1ou0lab li,
+.listbox-option,
+[data-testid="dropdown-option"] {
+  color: #cdd9e5 !important;
   background: transparent !important;
   border-radius: var(--radius-sm) !important;
   padding: 8px 12px !important;
@@ -403,9 +450,13 @@ label span, .label-wrap span {
 /* Hover + active (keyboard-focused) option */
 .gradio-dropdown .options .item:hover,
 .gradio-dropdown .options .item.active,
-.gradio-dropdown .options .inner-item:hover {
-  background: var(--bg-elevated) !important;
-  color: var(--text-primary) !important;
+.gradio-dropdown .options .inner-item:hover,
+.item.svelte-1ou0lab:hover,
+.active.svelte-1ou0lab,
+.listbox-option:hover,
+[data-testid="dropdown-option"]:hover {
+  background: #21293a !important;
+  color: #f0f6fc !important;
 }
 
 /* Disabled state */
@@ -417,19 +468,27 @@ label span, .label-wrap span {
 
 
 /* Light theme: dropdown list stays white with dark text */
-[data-theme="light"] .gradio-dropdown .options {
+[data-theme="light"] .gradio-dropdown .options,
+[data-theme="light"] .options.svelte-1ou0lab,
+[data-theme="light"] ul.options,
+[data-theme="light"] .listbox-options {
   background: #ffffff !important;
-  border-color: var(--border) !important;
+  border-color: #d0d7de !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+  color: #1f2328 !important;
 }
 [data-theme="light"] .gradio-dropdown .options .item,
-[data-theme="light"] .gradio-dropdown .options .inner-item {
-  color: var(--text-secondary) !important;
+[data-theme="light"] .gradio-dropdown .options .inner-item,
+[data-theme="light"] .item.svelte-1ou0lab,
+[data-theme="light"] .listbox-option {
+  color: #24292f !important;
 }
 [data-theme="light"] .gradio-dropdown .options .item:hover,
-[data-theme="light"] .gradio-dropdown .options .item.active {
-  background: var(--bg-elevated) !important;
-  color: var(--text-primary) !important;
+[data-theme="light"] .gradio-dropdown .options .item.active,
+[data-theme="light"] .item.svelte-1ou0lab:hover,
+[data-theme="light"] .active.svelte-1ou0lab {
+  background: #eaeef2 !important;
+  color: #1f2328 !important;
 }
 
 /* ══════════════════════════════════════════════
