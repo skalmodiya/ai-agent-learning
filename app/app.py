@@ -662,11 +662,14 @@ details > div, .accordion > div {
   flex-wrap: nowrap !important;
 }
 /* Kill label height — inputs have no label in topbar */
-.topbar-input label, .topbar-input .label-wrap { display: none !important; }
+.topbar-input .label-wrap span { display: none !important; }
+.topbar-input .label-wrap { min-height: 0 !important; height: 0 !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; }
 .topbar-input textarea,
-.topbar-input input { padding: 6px 10px !important; font-size: 13px !important; height: 34px !important; min-height: 34px !important; }
-.topbar-status label, .topbar-status .label-wrap { display: none !important; }
-.topbar-status textarea { font-size: 12px !important; font-weight: 600 !important; padding: 6px 8px !important; height: 34px !important; min-height: 34px !important; text-align: center !important; }
+.topbar-input input { padding: 6px 10px !important; font-size: 13px !important; }
+/* Dropdowns in topbar — ensure wrap is visible */
+.topbar-input .wrap, .topbar-input .wrap-inner { min-height: 36px !important; }
+.topbar-status .label-wrap { min-height: 0 !important; height: 0 !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; }
+.topbar-status textarea { font-size: 12px !important; font-weight: 600 !important; padding: 6px 8px !important; text-align: center !important; }
 
 /* Status colours */
 .config-status-ok  textarea { color: #56d364 !important; background: rgba(86,211,100,0.08) !important; border-color: rgba(86,211,100,0.3) !important; }
@@ -1275,7 +1278,6 @@ def build_ex08_tab(cfg_state):
 def build_app():
     with gr.Blocks(
         title="AI Agent Learning Platform",
-        js=f"() => {{ {THEME_JS} }}",
         fill_width=True,
     ) as app:
 
@@ -1301,7 +1303,7 @@ def build_app():
         with gr.Row(elem_classes="topbar-row"):
             api_key_input = gr.Textbox(
                 placeholder="🔑 API Key",
-                label="",
+                show_label=False,
                 type="password",
                 scale=3,
                 min_width=200,
@@ -1310,7 +1312,8 @@ def build_app():
             provider_dd = gr.Dropdown(
                 choices=ex_config.PROVIDER_LABELS,
                 value=None,
-                label="",
+                label="Provider",
+                show_label=False,
                 interactive=False,
                 scale=2,
                 min_width=130,
@@ -1319,7 +1322,8 @@ def build_app():
             model_dd = gr.Dropdown(
                 choices=[],
                 value=None,
-                label="",
+                label="Model",
+                show_label=False,
                 interactive=False,
                 scale=2,
                 min_width=170,
@@ -1327,7 +1331,7 @@ def build_app():
             )
             cfg_status = gr.Textbox(
                 value="⚠ API key",
-                label="",
+                show_label=False,
                 interactive=False,
                 scale=1,
                 min_width=110,
@@ -1456,6 +1460,7 @@ if __name__ == "__main__":
         server_port=7860,
         share=False,
         show_error=True,
+        js=f"() => {{ {THEME_JS} }}",
         css=CSS,
         theme=gr.themes.Base(
             primary_hue="blue",
