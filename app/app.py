@@ -551,6 +551,8 @@ button.secondary:hover {
 .flow-box .prose em     { color: var(--accent-cyan)   !important; font-style: normal !important; }
 .flow-box .prose del    { color: var(--text-faint)    !important; opacity: 0.7 !important; }
 .flow-box .prose hr     { border-color: var(--border-muted) !important; margin: 10px 0 !important; }
+/* progress bar inline code */
+.flow-box .prose p > code { background: transparent !important; border: none !important; padding: 0 !important; color: var(--accent-green) !important; font-size: 13px !important; letter-spacing: 1px !important; }
 
 /* ══════════════════════════════════════════════
    ACCORDION
@@ -717,21 +719,45 @@ setTimeout(wireTheme, 1500);
 
 def animate_flow(steps: list, active_idx: int) -> str:
     """
-    Build a markdown string where the active step is highlighted
-    and all previous steps are shown as completed (✓).
-    steps: list of (key, markdown_text) tuples from each exercise module
+    Render a step-by-step flow diagram.
+    - Completed steps: ✅ step name (clean label, no diagram clutter)
+    - Active step: full diagram + description, highlighted with ▶
+    - Future steps: dimmed label only
+    steps: list of (key, markdown_text) tuples
     """
-    lines = []
-    for i, (_, text) in enumerate(steps):
+    # Build a step-name label from the key: "plan_out" → "Plan Out"
+    def label(key: str) -> str:
+        return key.replace("_", " ").title()
+
+    sections = []
+
+    # Progress bar line at the top
+    total = len(steps)
+    done  = min(active_idx, total)
+    filled = "█" * done
+    empty  = "░" * (total - done)
+    pct = int(done / total * 100) if total else 0
+    sections.append(f"`{filled}{empty}` **{pct}%**\n")
+
+    for i, (key, text) in enumerate(steps):
+        step_num = i  # 0 = idle / waiting state, 1+ = real steps
+        if i == 0 and key in ("idle", "waiting", "start"):
+            # The first entry is the idle/waiting state — only show when nothing is running
+            if active_idx == 0:
+                sections.append(text)
+            continue
+
         if i < active_idx:
-            # Completed step — show green tick prefix on first line
-            first_line = text.split("\n")[0]
-            lines.append(f"✅ ~~{first_line}~~\n")
+            # Completed
+            sections.append(f"✅ **{label(key)}**")
         elif i == active_idx:
-            # Active step — show full text
-            lines.append(text + "\n")
-        # Future steps are hidden until reached
-    return "\n---\n".join(lines)
+            # Active — show full diagram + description
+            sections.append(f"**▶ {label(key)}**\n\n{text}")
+        else:
+            # Future — dimmed label
+            sections.append(f"○ {label(key)}")
+
+    return "\n\n".join(sections)
 
 
 # ─────────────────────────────────────────────
@@ -764,7 +790,7 @@ def build_ex01_tab(cfg_state):
         with gr.Column(scale=3, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
             flow_display = gr.Markdown(
-                ex01_simple.FLOW_STEPS[0][1], elem_classes="flow-box"
+                animate_flow(ex01_simple.FLOW_STEPS, 0), elem_classes="flow-box"
             )
 
     def respond(message, history, s, cfg):
@@ -795,7 +821,7 @@ def build_ex01_tab(cfg_state):
                    [chatbot, state, latency, raw_json, flow_display])
     msg_input.submit(respond, [msg_input, chatbot, state, cfg_state],
                      [chatbot, state, latency, raw_json, flow_display])
-    clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", None, ex01_simple.FLOW_STEPS[0][1]),
+    clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", None, animate_flow(ex01_simple.FLOW_STEPS, 0)),
                     outputs=[chatbot, state, latency, raw_json, flow_display])
 
 
@@ -826,7 +852,7 @@ def build_ex02_tab(cfg_state):
 
         with gr.Column(scale=3, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
-            flow_display = gr.Markdown(ex02_memory.FLOW_STEPS[0][1], elem_classes="flow-box")
+            flow_display = gr.Markdown(animate_flow(ex02_memory.FLOW_STEPS, 0), elem_classes="flow-box")
 
     def respond(message, history, s, persona, cfg):
         if not message.strip():
@@ -853,7 +879,7 @@ def build_ex02_tab(cfg_state):
                    [chatbot, state, latency, turn_count, flow_display])
     msg_input.submit(respond, [msg_input, chatbot, state, persona_input, cfg_state],
                      [chatbot, state, latency, turn_count, flow_display])
-    clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", "💬 Turns: 0", ex02_memory.FLOW_STEPS[0][1]),
+    clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", "💬 Turns: 0", animate_flow(ex02_memory.FLOW_STEPS, 0)),
                     outputs=[chatbot, state, latency, turn_count, flow_display])
 
 
@@ -882,7 +908,7 @@ def build_ex03_tab(cfg_state):
 
         with gr.Column(scale=3, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
-            flow_display = gr.Markdown(ex03_tools.FLOW_STEPS[0][1], elem_classes="flow-box")
+            flow_display = gr.Markdown(animate_flow(ex03_tools.FLOW_STEPS, 0), elem_classes="flow-box")
 
     def respond(message, history, s, cfg):
         if not message.strip():
@@ -915,7 +941,7 @@ def build_ex03_tab(cfg_state):
                    [chatbot, state, latency, tool_log, flow_display])
     msg_input.submit(respond, [msg_input, chatbot, state, cfg_state],
                      [chatbot, state, latency, tool_log, flow_display])
-    clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", [], ex03_tools.FLOW_STEPS[0][1]),
+    clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", [], animate_flow(ex03_tools.FLOW_STEPS, 0)),
                     outputs=[chatbot, state, latency, tool_log, flow_display])
 
 
@@ -943,7 +969,7 @@ def build_ex04_tab(cfg_state):
 
         with gr.Column(scale=3, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
-            flow_display = gr.Markdown(ex04_react.FLOW_STEPS[0][1], elem_classes="flow-box")
+            flow_display = gr.Markdown(animate_flow(ex04_react.FLOW_STEPS, 0), elem_classes="flow-box")
 
     def respond(message, cfg):
         if not message.strip():
@@ -993,7 +1019,7 @@ def build_ex05_tab(cfg_state):
 
         with gr.Column(scale=3, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
-            flow_display = gr.Markdown(ex05_multi_agent.FLOW_STEPS[0][1], elem_classes="flow-box")
+            flow_display = gr.Markdown(animate_flow(ex05_multi_agent.FLOW_STEPS, 0), elem_classes="flow-box")
 
     def respond(message, cfg):
         if not message.strip():
@@ -1043,7 +1069,7 @@ def build_ex06_tab(cfg_state):
 
         with gr.Column(scale=3, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
-            flow_display = gr.Markdown(ex06_streaming.FLOW_STEPS[0][1], elem_classes="flow-box")
+            flow_display = gr.Markdown(animate_flow(ex06_streaming.FLOW_STEPS, 0), elem_classes="flow-box")
 
     def respond(message, history, s, cfg):
         if not message.strip():
@@ -1088,7 +1114,7 @@ def build_ex06_tab(cfg_state):
                    [chatbot, state, latency, chunk_count, flow_display])
     msg_input.submit(respond, [msg_input, chatbot, state, cfg_state],
                      [chatbot, state, latency, chunk_count, flow_display])
-    clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", "📦 Chunks: 0", ex06_streaming.FLOW_STEPS[0][1]),
+    clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 0)),
                     outputs=[chatbot, state, latency, chunk_count, flow_display])
 
 
@@ -1127,7 +1153,7 @@ def build_ex07_tab(cfg_state):
 
         with gr.Column(scale=3, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
-            flow_display = gr.Markdown(ex07_structured.FLOW_STEPS[0][1], elem_classes="flow-box")
+            flow_display = gr.Markdown(animate_flow(ex07_structured.FLOW_STEPS, 0), elem_classes="flow-box")
 
     def respond(message, cfg):
         if not message.strip():
@@ -1194,7 +1220,7 @@ def build_ex08_tab(cfg_state):
 
         with gr.Column(scale=3, elem_classes="panel-card"):
             gr.Markdown("### 🔄 How It Works", elem_classes="section-label")
-            flow_display = gr.Markdown(ex08_rag.FLOW_STEPS[0][1], elem_classes="flow-box")
+            flow_display = gr.Markdown(animate_flow(ex08_rag.FLOW_STEPS, 0), elem_classes="flow-box")
 
     def respond(message, history, cfg):
         if not message.strip():
@@ -1220,7 +1246,7 @@ def build_ex08_tab(cfg_state):
                    [chatbot, latency, sources_box, flow_display])
     msg_input.submit(respond, [msg_input, chatbot, cfg_state],
                      [chatbot, latency, sources_box, flow_display])
-    clear_btn.click(lambda: ([], "⏱ Latency: —", "_..._", ex08_rag.FLOW_STEPS[0][1]),
+    clear_btn.click(lambda: ([], "⏱ Latency: —", "_..._", animate_flow(ex08_rag.FLOW_STEPS, 0)),
                     outputs=[chatbot, latency, sources_box, flow_display])
 
 
