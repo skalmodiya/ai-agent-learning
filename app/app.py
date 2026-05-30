@@ -12,6 +12,7 @@ import sys
 import os
 import time
 import json
+import sqlite3
 
 # Add parent directory so we can import app/exercises/
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -29,6 +30,39 @@ from exercises import (
     ex08_rag,
 )
 from exercises import config as ex_config
+
+# ─────────────────────────────────────────────
+# SQLITE — persist API key across restarts
+# ─────────────────────────────────────────────
+
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "settings.db")
+
+def _db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)"
+    )
+    conn.commit()
+    return conn
+
+def db_get(key: str, default: str = "") -> str:
+    try:
+        with _db() as conn:
+            row = conn.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
+            return row[0] if row else default
+    except Exception:
+        return default
+
+def db_set(key: str, value: str) -> None:
+    try:
+        with _db() as conn:
+            conn.execute(
+                "INSERT INTO settings(key,value) VALUES(?,?) "
+                "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                (key, value),
+            )
+    except Exception:
+        pass
 
 # ─────────────────────────────────────────────
 # THEME & CSS
@@ -1384,12 +1418,14 @@ def build_app():
         def on_api_key(key, cfg):
             key = key.strip()
             if not key:
+                db_set("api_key", "")
                 return (
                     gr.update(value=None, interactive=False),
                     gr.update(choices=[], value=None, interactive=False),
                     gr.update(value="⚠ Enter API key", elem_classes="config-status config-status-warn"),
                     {**cfg, "api_key": "", "provider_id": ex_config.DEFAULT_PROVIDER, "model": ""},
                 )
+            db_set("api_key", key)
             default_label = ex_config.PROVIDERS[ex_config.DEFAULT_PROVIDER]["label"]
             default_models = ex_config.get_models(ex_config.DEFAULT_PROVIDER)
             default_model  = default_models[0]
@@ -1405,25 +1441,17 @@ def build_app():
             inputs=[api_key_input, cfg_state],
             outputs=[provider_dd, model_dd, cfg_status, cfg_state],
         )
-        # Save key to localStorage whenever it changes (clear on empty)
-        api_key_input.change(
-            fn=None,
-            inputs=[api_key_input],
-            js="(k) => { if(k && k.trim()) localStorage.setItem('ai-agent-key', k.trim()); else localStorage.removeItem('ai-agent-key'); }",
-        )
 
-        # ── Restore API key on page load ──
-        # JS reads localStorage and returns the saved key as a string.
-        # Python receives it, sets up provider/model/cfg exactly like on_api_key does,
-        # and also updates the visible input field value.
-        def restore_api_key(saved_key, cfg):
-            return on_api_key(saved_key, cfg) + (gr.update(value=saved_key),)
+        # ── Restore API key on page load from SQLite ──
+        def restore_api_key(cfg):
+            saved_key = db_get("api_key")
+            updates = on_api_key(saved_key, cfg)
+            return updates + (gr.update(value=saved_key),)
 
         app.load(
             fn=restore_api_key,
-            inputs=[gr.State(""), cfg_state],
+            inputs=[cfg_state],
             outputs=[provider_dd, model_dd, cfg_status, cfg_state, api_key_input],
-            js="() => localStorage.getItem('ai-agent-key') || ''",
         )
 
         # When provider changes → refresh model list, pick first model

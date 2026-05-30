@@ -31,3 +31,6 @@ Thumbs.db
 .env
 secrets.py
 config.local.py
+
+# SQLite settings DB (contains stored API key)
+app/settings.db
