@@ -573,32 +573,12 @@ details summary:hover {
 ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
 /* ══════════════════════════════════════════════
-   THEME ROW — float the radio to the right
-   ══════════════════════════════════════════════ */
-.theme-row {
-  position: relative !important;
-  margin-top: -52px !important;
-  z-index: 10 !important;
-  pointer-events: none !important;
-}
-.theme-col {
-  pointer-events: all !important;
-  display: flex !important;
-  justify-content: flex-end !important;
-  align-items: center !important;
-  padding-right: 28px !important;
-  padding-top: 14px !important;
-}
-
-/* ══════════════════════════════════════════════
    RESPONSIVE — narrow viewports
    ══════════════════════════════════════════════ */
 @media (max-width: 900px) {
   .gradio-container { padding: 0 0 32px 0 !important; }
   .panel-card { min-height: 300px !important; padding: 14px 16px !important; }
   .tab-nav button { padding: 10px 10px !important; font-size: 11.5px !important; }
-  .theme-row { margin-top: 0 !important; }
-  .theme-col { justify-content: flex-start !important; padding-right: 0 !important; padding-left: 16px !important; }
 }
 @media (max-width: 600px) {
   .tab-nav button { padding: 8px 8px !important; font-size: 11px !important; }
@@ -1150,56 +1130,98 @@ def build_app():
         js=f"() => {{ {THEME_JS} }}",  # runs on page load to restore saved theme
     ) as app:
 
-        # ── Header ──
+        # ── Header (contains theme buttons inline) ──
         gr.HTML("""
 <div style="
   background: var(--header-bg);
   border-bottom: 1px solid var(--border-muted);
-  padding: 20px 28px 16px 28px;
+  padding: 18px 28px 16px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
 ">
   <!-- Left: branding -->
-  <div style="display:flex; align-items:center; gap:16px; flex:1; min-width:260px;">
+  <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:220px;">
     <div style="
-      width:48px; height:48px; border-radius:14px; flex-shrink:0;
+      width:46px; height:46px; border-radius:13px; flex-shrink:0;
       background: linear-gradient(135deg,#2563eb,#7c3aed);
       display:flex; align-items:center; justify-content:center;
-      font-size:26px; box-shadow:0 4px 16px rgba(37,99,235,0.4);
+      font-size:24px; box-shadow:0 4px 16px rgba(37,99,235,0.4);
     ">🤖</div>
     <div>
-      <h1 style="
-        margin:0; font-size:20px; font-weight:700;
-        color:var(--text-primary); letter-spacing:-0.4px; line-height:1.2;
-      ">AI Agent Learning Platform</h1>
-      <p style="margin:3px 0 0 0; font-size:12.5px; color:var(--text-muted); line-height:1.4;">
+      <h1 style="margin:0; font-size:19px; font-weight:700; color:var(--text-primary); letter-spacing:-0.4px; line-height:1.2;">
+        AI Agent Learning Platform
+      </h1>
+      <p style="margin:3px 0 0 0; font-size:12px; color:var(--text-muted); line-height:1.4;">
         Learn AI Agents from scratch &nbsp;·&nbsp; One concept per tab &nbsp;·&nbsp; Live chat &nbsp;·&nbsp; Animated flows
       </p>
     </div>
   </div>
-  <!-- Center: badges -->
-  <div style="display:flex; gap:7px; flex-wrap:wrap; align-items:center;">
-    <span style="background:rgba(96,165,250,0.1); color:var(--accent-blue); border:1px solid rgba(96,165,250,0.25); border-radius:20px; padding:4px 13px; font-size:11.5px; font-weight:600; white-space:nowrap;">📚 8 Exercises</span>
-    <span style="background:rgba(52,211,153,0.1); color:var(--accent-green); border:1px solid rgba(52,211,153,0.25); border-radius:20px; padding:4px 13px; font-size:11.5px; font-weight:600; white-space:nowrap;">🚀 Simple → RAG</span>
-    <span style="background:rgba(167,139,250,0.1); color:var(--accent-purple); border:1px solid rgba(167,139,250,0.25); border-radius:20px; padding:4px 13px; font-size:11.5px; font-weight:600; white-space:nowrap;">⚡ Live Chat</span>
-    <span style="background:rgba(251,146,60,0.1); color:var(--accent-orange); border:1px solid rgba(251,146,60,0.25); border-radius:20px; padding:4px 13px; font-size:11.5px; font-weight:600; white-space:nowrap;">🔄 Animated Flows</span>
+
+  <!-- Right: badges + theme switcher stacked -->
+  <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+
+    <!-- Badges row -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+      <span style="background:rgba(96,165,250,0.1); color:var(--accent-blue); border:1px solid rgba(96,165,250,0.25); border-radius:20px; padding:3px 11px; font-size:11px; font-weight:600; white-space:nowrap;">📚 8 Exercises</span>
+      <span style="background:rgba(52,211,153,0.1); color:var(--accent-green); border:1px solid rgba(52,211,153,0.25); border-radius:20px; padding:3px 11px; font-size:11px; font-weight:600; white-space:nowrap;">🚀 Simple → RAG</span>
+      <span style="background:rgba(167,139,250,0.1); color:var(--accent-purple); border:1px solid rgba(167,139,250,0.25); border-radius:20px; padding:3px 11px; font-size:11px; font-weight:600; white-space:nowrap;">⚡ Live Chat</span>
+      <span style="background:rgba(251,146,60,0.1); color:var(--accent-orange); border:1px solid rgba(251,146,60,0.25); border-radius:20px; padding:3px 11px; font-size:11px; font-weight:600; white-space:nowrap;">🔄 Flows</span>
+    </div>
+
+    <!-- Theme switcher row -->
+    <div style="display:flex; align-items:center; gap:6px;">
+      <span style="font-size:11px; color:var(--text-faint); font-weight:500; margin-right:4px; white-space:nowrap;">Theme</span>
+      <button id="btn-dark"   onclick="setTheme('dark')"   style="cursor:pointer; border:1px solid var(--border); border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:var(--btn-primary); color:#fff; transition:all 0.15s;">🌙 Dark</button>
+      <button id="btn-light"  onclick="setTheme('light')"  style="cursor:pointer; border:1px solid var(--border); border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:var(--bg-elevated); color:var(--text-muted); transition:all 0.15s;">☀️ Light</button>
+      <button id="btn-system" onclick="setTheme('system')" style="cursor:pointer; border:1px solid var(--border); border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:var(--bg-elevated); color:var(--text-muted); transition:all 0.15s;">💻 System</button>
+    </div>
+
   </div>
 </div>
+
+<script>
+function setTheme(t) {
+  const resolved = t === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+    : t;
+  document.documentElement.setAttribute('data-theme', resolved);
+  localStorage.setItem('ai-agent-theme-key', t);
+  ['dark','light','system'].forEach(function(k) {
+    var b = document.getElementById('btn-' + k);
+    if (!b) return;
+    if (k === t) {
+      b.style.background = 'var(--btn-primary)';
+      b.style.color = '#fff';
+      b.style.borderColor = 'var(--btn-primary)';
+      b.style.boxShadow = '0 2px 8px rgba(37,99,235,0.4)';
+    } else {
+      b.style.background = 'var(--bg-elevated)';
+      b.style.color = 'var(--text-muted)';
+      b.style.borderColor = 'var(--border)';
+      b.style.boxShadow = 'none';
+    }
+  });
+}
+// Restore on load
+(function() {
+  var saved = localStorage.getItem('ai-agent-theme-key') || 'dark';
+  setTheme(saved);
+})();
+</script>
 """)
-        with gr.Row(elem_classes="theme-row"):
-            with gr.Column(scale=10):
-                pass
-            with gr.Column(scale=2, min_width=230, elem_classes="theme-col"):
-                theme_radio = gr.Radio(
-                    choices=["🌙 Dark", "☀️ Light", "💻 System"],
-                    value="🌙 Dark",
-                    label="",
-                    interactive=True,
-                    elem_classes="theme-radio",
-                )
+        # Hidden radio — kept only so theme_radio.change() JS still fires for
+        # any programmatic callers; not shown in the UI.
+        with gr.Row(visible=False):
+            theme_radio = gr.Radio(
+                choices=["🌙 Dark", "☀️ Light", "💻 System"],
+                value="🌙 Dark",
+                label="",
+                interactive=True,
+                elem_classes="theme-radio",
+            )
 
         # ── Exercise Tabs ──
         with gr.Tabs():
