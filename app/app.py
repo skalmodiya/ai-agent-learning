@@ -315,43 +315,37 @@ details summary:hover { color: var(--text-primary) !important; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
-/* ── MISC GRADIO OVERRIDES ───────────────────── */
-.gradio-container .prose { color: var(--text-secondary) !important; }
-.label-wrap span { color: var(--text-muted) !important; font-size: 12px !important; }
-.block { background: var(--bg-surface) !important; border-color: var(--border-muted) !important; }
+/* ── THEME RADIO SWITCHER ────────────────────── */
+.theme-radio { background: transparent !important; border: none !important; padding: 0 !important; }
+.theme-radio .wrap { gap: 4px !important; flex-wrap: nowrap !important; }
+.theme-radio label {
+  background: var(--bg-elevated) !important; color: var(--text-muted) !important;
+  border: 1px solid var(--border-muted) !important; border-radius: 20px !important;
+  font-size: 12px !important; font-weight: 500 !important;
+  padding: 4px 14px !important; cursor: pointer !important;
+  transition: all 0.15s !important; white-space: nowrap !important;
+}
+.theme-radio label:has(input:checked),
+.theme-radio label.selected {
+  background: var(--accent-blue) !important; color: #fff !important;
+  border-color: var(--accent-blue) !important; font-weight: 600 !important;
+}
+.theme-radio input[type="radio"] { display: none !important; }
 """
 
+# JS that runs once on page load — applies saved theme and wires the Radio change
 THEME_JS = """
-function() {
-  // Apply saved theme on load
-  const saved = localStorage.getItem('ai-agent-theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
-
-  // Theme switcher click handler (delegated)
-  document.addEventListener('click', function(e) {
-    const btn = e.target.closest('[data-theme-set]');
-    if (!btn) return;
-    const theme = btn.getAttribute('data-theme-set');
-
-    if (theme === 'system') {
-      const sys = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', sys);
-    } else {
-      document.documentElement.setAttribute('data-theme', theme);
-    }
-    localStorage.setItem('ai-agent-theme', theme);
-
-    // Update active button style
-    document.querySelectorAll('[data-theme-set]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  });
-
-  // Mark the saved button as active after a short delay (DOM may not be ready)
-  setTimeout(() => {
-    const btn = document.querySelector('[data-theme-set="' + saved + '"]');
-    if (btn) btn.classList.add('active');
-  }, 200);
+function applyTheme(theme) {
+  const resolved = (theme === '💻 System')
+    ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+    : (theme === '☀️ Light' ? 'light' : 'dark');
+  document.documentElement.setAttribute('data-theme', resolved);
+  localStorage.setItem('ai-agent-theme', theme);
 }
+
+// Restore on load
+const saved = localStorage.getItem('ai-agent-theme') || '🌙 Dark';
+applyTheme(saved);
 """
 
 
@@ -427,12 +421,12 @@ def build_ex01_tab():
             yield history, s, "⏱ Parsing...", None, animate_flow(ex01_simple.FLOW_STEPS, 4)
             time.sleep(0.2)
 
-            history = history + [[message, result["reply"]]]
+            history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": result["reply"]}]
             yield (history, s, f"⏱ Latency: {result['latency']}s",
                    {"request": result["request"], "response": result["response"]},
                    animate_flow(ex01_simple.FLOW_STEPS, 5))
         except Exception as e:
-            history = history + [[message, f"❌ Error: {e}"]]
+            history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield history, s, "⏱ Error", None, animate_flow(ex01_simple.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state],
@@ -485,12 +479,12 @@ def build_ex02_tab():
             result = ex02_memory.run(message, s["history"], persona)
             s["history"] = result["history"]
 
-            history = history + [[message, result["reply"]]]
+            history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": result["reply"]}]
             yield (history, s, f"⏱ Latency: {result['latency']}s",
                    f"💬 Turns: {len(s['history'])//2}",
                    animate_flow(ex02_memory.FLOW_STEPS, 5))
         except Exception as e:
-            history = history + [[message, f"❌ Error: {e}"]]
+            history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield history, s, "⏱ Error", f"💬 Turns: {len(s['history'])//2}", animate_flow(ex02_memory.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state, persona_input],
@@ -548,11 +542,11 @@ def build_ex03_tab():
                 yield history, s, "⏱ Feeding result back...", result["tool_calls"], animate_flow(ex03_tools.FLOW_STEPS, 5)
                 time.sleep(0.3)
 
-            history = history + [[message, result["reply"]]]
+            history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": result["reply"]}]
             yield (history, s, f"⏱ Latency: {result['latency']}s",
                    result["tool_calls"], animate_flow(ex03_tools.FLOW_STEPS, 6))
         except Exception as e:
-            history = history + [[message, f"❌ Error: {e}"]]
+            history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield history, s, "⏱ Error", [], animate_flow(ex03_tools.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state],
@@ -700,11 +694,14 @@ def build_ex06_tab():
             t0 = time.time()
             accumulated = ""
             chunk_n = 0
-            # Stream tokens into the chatbot live using [user, partial_bot] tuples
+            # Stream tokens — build history with dict format Gradio 6 expects
             for chunk in ex06_streaming.run_stream(message, s["history"]):
                 accumulated += chunk
                 chunk_n += 1
-                current_history = history + [[message, accumulated]]
+                current_history = history + [
+                    {"role": "user",      "content": message},
+                    {"role": "assistant", "content": accumulated},
+                ]
                 yield (current_history, s,
                        f"⏱ Streaming... {round(time.time()-t0,1)}s",
                        f"📦 Chunks: {chunk_n}",
@@ -713,13 +710,16 @@ def build_ex06_tab():
             elapsed = round(time.time() - t0, 2)
             s["history"] += [{"role":"user","content":message},
                               {"role":"assistant","content":accumulated}]
-            final_history = history + [[message, accumulated]]
+            final_history = history + [
+                {"role": "user",      "content": message},
+                {"role": "assistant", "content": accumulated},
+            ]
             yield (final_history, s,
                    f"⏱ Latency: {elapsed}s",
                    f"📦 Chunks: {chunk_n}",
                    animate_flow(ex06_streaming.FLOW_STEPS, 4))
         except Exception as e:
-            err_history = history + [[message, f"❌ Error: {e}"]]
+            err_history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield err_history, s, "⏱ Error", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state],
@@ -846,12 +846,12 @@ def build_ex08_tab():
         yield history, "⏱ AI generating...", "_Generating grounded answer..._", animate_flow(ex08_rag.FLOW_STEPS, 4)
         try:
             result = ex08_rag.run(message)
-            history = history + [[message, result["reply"]]]
+            history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": result["reply"]}]
             sources_md = "**Retrieved:** " + " · ".join(f"`{s}`" for s in result["sources"])
             yield (history, f"⏱ Latency: {result['latency']}s",
                    sources_md, animate_flow(ex08_rag.FLOW_STEPS, 5))
         except Exception as e:
-            history = history + [[message, f"❌ Error: {e}"]]
+            history = history + [{"role": "user", "content": message}, {"role": "assistant", "content": f"❌ Error: {e}"}]
             yield history, "⏱ Error", "_Error_", animate_flow(ex08_rag.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot],
@@ -867,47 +867,47 @@ def build_ex08_tab():
 # ─────────────────────────────────────────────
 
 def build_app():
-    with gr.Blocks(title="AI Agent Learning Platform") as app:
+    with gr.Blocks(
+        title="AI Agent Learning Platform",
+        js=f"() => {{ {THEME_JS} }}",  # runs on page load to restore saved theme
+    ) as app:
 
-        # Theme initialiser — runs on page load
-        gr.HTML(f"<script>({THEME_JS})()</script>")
-
-        gr.HTML("""
-<div style="padding:20px 0 14px 0; border-bottom:1px solid var(--border-muted); margin-bottom:4px;">
-  <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-
-    <div style="display:flex; align-items:center; gap:14px;">
-      <span style="font-size:36px; line-height:1;">🤖</span>
-      <div>
-        <h1 style="margin:0; font-size:22px; font-weight:700; color:var(--text-primary); letter-spacing:-0.3px;">
-          AI Agent Learning Platform
-        </h1>
-        <p style="margin:3px 0 0 0; font-size:13px; color:var(--text-muted);">
-          Learn AI Agents from scratch &nbsp;·&nbsp; One concept per tab &nbsp;·&nbsp; Try live &nbsp;·&nbsp; Watch animated flows
-        </p>
-      </div>
+        # ── Header ──
+        with gr.Row(elem_classes="header-row"):
+            with gr.Column(scale=8):
+                gr.HTML("""
+<div style="padding:18px 0 10px 0;">
+  <div style="display:flex; align-items:center; gap:14px;">
+    <span style="font-size:38px; line-height:1;">🤖</span>
+    <div>
+      <h1 style="margin:0; font-size:22px; font-weight:700; color:var(--text-primary); letter-spacing:-0.3px;">
+        AI Agent Learning Platform
+      </h1>
+      <p style="margin:4px 0 0 0; font-size:13px; color:var(--text-muted);">
+        Learn AI Agents from scratch &nbsp;·&nbsp; One concept per tab &nbsp;·&nbsp; Live chat &nbsp;·&nbsp; Animated flows
+      </p>
     </div>
-
-    <!-- Theme switcher -->
-    <div style="display:flex; align-items:center; gap:6px; padding:4px 6px; background:var(--bg-elevated); border:1px solid var(--border-muted); border-radius:24px;">
-      <span style="font-size:11px; color:var(--text-faint); padding:0 4px; font-weight:600; letter-spacing:1px; text-transform:uppercase;">Theme</span>
-      <button class="theme-btn" data-theme-set="dark"   onclick="void(0)">🌙 Dark</button>
-      <button class="theme-btn" data-theme-set="light"  onclick="void(0)">☀️ Light</button>
-      <button class="theme-btn" data-theme-set="system" onclick="void(0)">💻 System</button>
-    </div>
-
   </div>
-
-  <!-- Badges -->
-  <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
-    <span style="background:var(--bg-elevated); color:var(--accent-blue); border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">📚 8 Exercises</span>
-    <span style="background:var(--bg-elevated); color:var(--accent-green); border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">🚀 Simple → RAG</span>
+  <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+    <span style="background:var(--bg-elevated); color:var(--accent-blue);   border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">📚 8 Exercises</span>
+    <span style="background:var(--bg-elevated); color:var(--accent-green);  border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">🚀 Simple → RAG</span>
     <span style="background:var(--bg-elevated); color:var(--accent-purple); border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">⚡ Live Chat</span>
     <span style="background:var(--bg-elevated); color:var(--accent-orange); border:1px solid var(--border-muted); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600;">🔄 Animated Flows</span>
   </div>
 </div>
 """)
+            with gr.Column(scale=2, min_width=220):
+                theme_radio = gr.Radio(
+                    choices=["🌙 Dark", "☀️ Light", "💻 System"],
+                    value="🌙 Dark",
+                    label="Theme",
+                    interactive=True,
+                    elem_classes="theme-radio",
+                )
 
+        gr.HTML('<div style="border-bottom:1px solid var(--border-muted); margin: 0 0 8px 0;"></div>')
+
+        # ── Exercise Tabs ──
         with gr.Tabs():
             with gr.Tab("01 · Simple Agent"):
                 build_ex01_tab()
@@ -928,12 +928,24 @@ def build_app():
 
         gr.HTML("""
 <div style="text-align:center; color:var(--text-faint); font-size:12px; padding:20px 0 8px 0; border-top:1px solid var(--border-muted); margin-top:16px;">
-  AI Agent Learning Series &nbsp;·&nbsp; 8 exercises: Simple → Memory → Tools → ReAct → Multi-Agent → Streaming → Structured → RAG &nbsp;·&nbsp;
-  <a href="https://github.com/skalmodiya/ai-agent-learning" style="color:var(--accent-blue); text-decoration:none; font-weight:600;">
-    GitHub ↗
-  </a>
+  AI Agent Learning Series &nbsp;·&nbsp; Simple → Memory → Tools → ReAct → Multi-Agent → Streaming → Structured → RAG &nbsp;·&nbsp;
+  <a href="https://github.com/skalmodiya/ai-agent-learning" style="color:var(--accent-blue); text-decoration:none; font-weight:600;">GitHub ↗</a>
 </div>
 """)
+
+        # ── Theme switcher logic ──
+        # When the Radio changes, run JS to update data-theme on <html>
+        theme_radio.change(
+            fn=None,
+            inputs=theme_radio,
+            js="""(theme) => {
+                const resolved = (theme === '💻 System')
+                    ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+                    : (theme === '☀️ Light' ? 'light' : 'dark');
+                document.documentElement.setAttribute('data-theme', resolved);
+                localStorage.setItem('ai-agent-theme', theme);
+            }""",
+        )
 
     return app
 
