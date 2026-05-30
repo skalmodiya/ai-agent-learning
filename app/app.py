@@ -664,11 +664,13 @@ details > div, .accordion > div {
 /* ══════════════════════════════════════════════
    TAB CONTENT PADDING
    ══════════════════════════════════════════════ */
-.tabitem { padding: 12px 12px 0 12px !important; }
+.tabitem { padding: 10px 10px 0 10px !important; }
 .tabitem > div { gap: 10px !important; }
 /* Make the row fill full viewport width */
 .tabitem > .gap, .tabitem > div > .gap { gap: 10px !important; }
 .gradio-row { gap: 10px !important; align-items: stretch !important; }
+/* Remove Gradio's default inner padding that adds side whitespace */
+.gradio-container > .main > .wrap { padding: 0 !important; }
 
 /* ══════════════════════════════════════════════
    PERSONA TEXTBOX (ex02)
@@ -1291,7 +1293,8 @@ def build_ex08_tab(cfg_state):
 def build_app():
     with gr.Blocks(
         title="AI Agent Learning Platform",
-        js=f"() => {{ {THEME_JS} }}",  # runs on page load to restore saved theme
+        js=f"() => {{ {THEME_JS} }}",
+        fill_width=True,
     ) as app:
 
         # ── Header ──
