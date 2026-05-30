@@ -34,3 +34,4 @@ config.local.py
 
 # SQLite settings DB (contains stored API key)
 app/settings.db
+Screenshot*.png
