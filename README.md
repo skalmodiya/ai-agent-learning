@@ -1,61 +1,40 @@
 # AI Agent Learning Journey
 
-A hands-on, progressive series of exercises for learning AI Agents from scratch —
-from a single API call all the way to complex multi-agent systems.
+A hands-on, progressive series for learning AI Agents from scratch —
+from a single API call all the way to RAG and multi-agent systems.
 
-Each exercise builds on the previous one, adding exactly one new concept at a time.
+Each exercise teaches **one concept only**, with every line commented.
+Run them from the terminal, or use the **Gradio UI app** to explore all 8 at once.
+
+---
+
+## Quick Start — UI App (Recommended)
+
+```bash
+cd app
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # Mac/Linux
+pip install -r requirements.txt
+python app.py
+```
+
+Open **http://localhost:7860** — click any exercise tab and start learning.
 
 ---
 
 ## Learning Path
 
-| # | Exercise | Topic | Key Concept |
+| # | Exercise | New Concept | Key Idea |
 |---|---|---|---|
-| 01 | [Simple Agent](./exercise-01-simple-agent/) | Your first API call | HTTP POST → AI response |
-| 02 | Memory & Persona _(coming soon)_ | System prompt + chat history | Stateful conversation |
-| 03 | Tools _(coming soon)_ | Give the agent abilities | Function/tool calling |
-| 04 | ReAct Loop _(coming soon)_ | Think → Act → Observe | The agent loop pattern |
-| 05 | Multi-Agent _(coming soon)_ | Agents talking to agents | Orchestration |
-
----
-
-## Prerequisites
-
-- Python 3.9+
-- `pip` package manager
-- Access to the AI API (configured per exercise)
-
----
-
-## How to Use This Repo
-
-Each exercise is self-contained. The standard setup for every exercise is:
-
-```bash
-# 1. Go into the exercise folder
-cd exercise-01-simple-agent
-
-# 2. Create a virtual environment (keeps dependencies isolated)
-python -m venv venv
-
-# 3. Activate it
-#    Windows:
-venv\Scripts\activate
-#    Mac / Linux:
-source venv/bin/activate
-
-# 4. Install dependencies
-pip install -r requirements.txt
-
-# 5. Run the agent
-python agent.py
-```
-
-> Every agent enforces the virtual environment — it will print a clear error
-> and exit if you try to run it without one activated.
-
-Read the `README.md` inside each exercise folder first — it explains the concept
-before you look at the code.
+| [01](./exercise-01-simple-agent/) | Simple Agent | HTTP POST to AI API | One message in, one reply out |
+| [02](./exercise-02-memory-persona/) | Memory & Persona | System prompt + history | Agent remembers context |
+| [03](./exercise-03-tool-use/) | Tool Use | Function calling | Agent invokes code you write |
+| [04](./exercise-04-react-loop/) | ReAct Loop | Thought → Action → Observe | Transparent reasoning chain |
+| [05](./exercise-05-multi-agent/) | Multi-Agent | Agent pipeline | Planner + Writer collaborate |
+| [06](./exercise-06-streaming/) | Streaming | Server-Sent Events | Tokens arrive in real time |
+| [07](./exercise-07-structured-output/) | Structured Output | JSON schema forcing | Machine-readable responses |
+| [08](./exercise-08-rag/) | RAG | Retrieval-Augmented Generation | Answer from your own documents |
 
 ---
 
@@ -63,14 +42,56 @@ before you look at the code.
 
 ```
 AIAgent/
-├── README.md                        ← You are here
+├── README.md
 ├── .gitignore
-└── exercise-01-simple-agent/
-    ├── agent.py                     ← Agent code (heavily commented)
-    ├── README.md                    ← Concept explanation + how to run
-    ├── requirements.txt             ← Dependencies
-    └── venv/                        ← Created locally, not committed
+│
+├── app/                              ← Gradio UI — explore all 8 exercises here
+│   ├── app.py                        ← Launch: python app.py → localhost:7860
+│   ├── requirements.txt              ← gradio, requests
+│   ├── README.md
+│   └── exercises/                    ← Importable logic modules (no venv guard)
+│       ├── ex01_simple.py
+│       ├── ex02_memory.py
+│       ├── ex03_tools.py
+│       ├── ex04_react.py
+│       ├── ex05_multi_agent.py
+│       ├── ex06_streaming.py
+│       ├── ex07_structured.py
+│       └── ex08_rag.py
+│
+├── exercise-01-simple-agent/         ← Terminal version of each exercise
+├── exercise-02-memory-persona/       ← Each has: agent.py, README.md,
+├── exercise-03-tool-use/             ←           requirements.txt
+├── exercise-04-react-loop/
+├── exercise-05-multi-agent/
+├── exercise-06-streaming/
+├── exercise-07-structured-output/
+└── exercise-08-rag/
 ```
+
+---
+
+## Running Individual Exercises (Terminal)
+
+Every exercise folder is self-contained:
+
+```bash
+cd exercise-02-memory-persona
+
+python -m venv venv
+venv\Scripts\activate       # Windows
+pip install -r requirements.txt
+python agent.py
+```
+
+The agent will refuse to start if no virtual environment is active.
+
+---
+
+## Prerequisites
+
+- Python 3.9+
+- Access to the AI API on `localhost:6655` (Anthropic proxy)
 
 ---
 
@@ -78,5 +99,4 @@ AIAgent/
 
 > One concept per exercise. No magic. Every line explained.
 
-The goal is not just to make things work, but to understand *why* they work
-so you can build your own agents from scratch.
+The goal is to understand *why* agents work, not just copy-paste code.
