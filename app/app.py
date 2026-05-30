@@ -685,45 +685,60 @@ details > div, .accordion > div {
 @media (max-width: 600px) {
   .tab-nav button { padding: 8px 8px !important; font-size: 11px !important; }
 }
+
+/* ══════════════════════════════════════════════
+   THEME BAR
+   ══════════════════════════════════════════════ */
+.theme-bar {
+  background: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--border-muted) !important;
+  padding: 7px 20px !important;
+  gap: 6px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+}
+/* Prevent Gradio from stretching each button column to fill the row */
+.theme-bar > .gap, .theme-bar > div { flex: 0 0 auto !important; min-width: 0 !important; width: auto !important; }
+.theme-btn, .theme-btn > div { width: auto !important; min-width: 0 !important; flex-shrink: 0 !important; }
+.theme-btn button {
+  background: var(--bg-elevated) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 20px !important;
+  padding: 5px 16px !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  transition: all 0.15s !important;
+  min-width: 0 !important;
+  width: auto !important;
+  white-space: nowrap !important;
+}
+.theme-btn button:hover {
+  background: var(--bg-card) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-active) !important;
+}
+.theme-btn-dark button {
+  background: var(--btn-primary) !important;
+  color: #ffffff !important;
+  border-color: var(--btn-primary) !important;
+}
+
 """
 
-# JS that runs once on page load — applies saved theme and wires the Radio change
+# JS that runs once on page load — applies saved theme
 THEME_JS = """
-function setTheme(t) {
+function applyTheme(t) {
   var resolved = t === 'system'
     ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
     : t;
   document.documentElement.setAttribute('data-theme', resolved);
-  localStorage.setItem('ai-agent-theme-key', t);
-  ['dark','light','system'].forEach(function(k) {
-    var b = document.getElementById('btn-theme-' + k);
-    if (!b) return;
-    if (k === t) {
-      b.style.cssText += ';background:#2563eb!important;color:#fff!important;border-color:#2563eb!important;box-shadow:0 2px 8px rgba(37,99,235,0.5)!important;';
-    } else {
-      b.style.cssText += ';background:#1a2540!important;color:#7888aa!important;border-color:#2a3550!important;box-shadow:none!important;';
-    }
-  });
+  localStorage.setItem('ai-agent-theme', t);
 }
-
-function wireTheme() {
-  // Event delegation — catches clicks on any data-theme-set element
-  document.removeEventListener('click', _themeClick);
-  document.addEventListener('click', _themeClick);
-  // Apply saved theme and mark active button
-  var saved = localStorage.getItem('ai-agent-theme-key') || 'dark';
-  setTheme(saved);
-}
-
-function _themeClick(e) {
-  var el = e.target.closest('[data-theme-set]');
-  if (el) setTheme(el.getAttribute('data-theme-set'));
-}
-
-// Run immediately and also after Gradio finishes rendering
-wireTheme();
-setTimeout(wireTheme, 500);
-setTimeout(wireTheme, 1500);
+var saved = localStorage.getItem('ai-agent-theme') || 'dark';
+applyTheme(saved);
+setTimeout(function(){ applyTheme(localStorage.getItem('ai-agent-theme') || 'dark'); }, 800);
 """
 
 
@@ -1264,66 +1279,19 @@ def build_app():
 
         # ── Header ──
         gr.HTML("""
-<div style="
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--border-muted);
-  padding: 18px 28px 16px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-">
-  <!-- Left: branding -->
-  <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:220px;">
-    <div style="
-      width:46px; height:46px; border-radius:13px; flex-shrink:0;
-      background: linear-gradient(135deg,#2563eb,#7c3aed);
-      display:flex; align-items:center; justify-content:center;
-      font-size:24px; box-shadow:0 4px 16px rgba(37,99,235,0.4);
-    ">🤖</div>
+<div id="app-header" style="background:linear-gradient(135deg,#0d1117 0%,#161b22 100%); border-bottom:1px solid #243042; padding:16px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🤖</div>
     <div>
-      <h1 style="margin:0; font-size:19px; font-weight:700; color:var(--text-primary); letter-spacing:-0.4px; line-height:1.2;">
-        AI Agent Learning Platform
-      </h1>
-      <p style="margin:3px 0 0 0; font-size:12px; color:var(--text-muted); line-height:1.4;">
-        Learn AI Agents from scratch &nbsp;·&nbsp; One concept per tab &nbsp;·&nbsp; Live chat &nbsp;·&nbsp; Animated flows
-      </p>
+      <div style="font-size:17px;font-weight:700;color:#f0f6fc;letter-spacing:-0.3px;">AI Agent Learning Platform</div>
+      <div style="font-size:12px;color:#a0b3c8;margin-top:2px;">8 exercises · Simple → RAG · Live chat · Animated flows</div>
     </div>
   </div>
-
-  <!-- Right: badges + theme switcher stacked -->
-  <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
-
-    <!-- Badges row -->
-    <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-      <span style="background:rgba(96,165,250,0.1); color:var(--accent-blue); border:1px solid rgba(96,165,250,0.25); border-radius:20px; padding:3px 11px; font-size:11px; font-weight:600; white-space:nowrap;">📚 8 Exercises</span>
-      <span style="background:rgba(52,211,153,0.1); color:var(--accent-green); border:1px solid rgba(52,211,153,0.25); border-radius:20px; padding:3px 11px; font-size:11px; font-weight:600; white-space:nowrap;">🚀 Simple → RAG</span>
-      <span style="background:rgba(167,139,250,0.1); color:var(--accent-purple); border:1px solid rgba(167,139,250,0.25); border-radius:20px; padding:3px 11px; font-size:11px; font-weight:600; white-space:nowrap;">⚡ Live Chat</span>
-      <span style="background:rgba(251,146,60,0.1); color:var(--accent-orange); border:1px solid rgba(251,146,60,0.25); border-radius:20px; padding:3px 11px; font-size:11px; font-weight:600; white-space:nowrap;">🔄 Flows</span>
-    </div>
-
-    <!-- Theme switcher — data-theme-set picked up by event delegation in THEME_JS -->
-    <div style="display:flex; align-items:center; gap:6px;">
-      <span style="font-size:11px; color:var(--text-faint); font-weight:500; margin-right:2px; white-space:nowrap; user-select:none;">Theme</span>
-      <button id="btn-theme-dark"   data-theme-set="dark"   style="cursor:pointer; border:1px solid #2563eb; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:#2563eb; color:#fff; transition:all 0.15s;">🌙 Dark</button>
-      <button id="btn-theme-light"  data-theme-set="light"  style="cursor:pointer; border:1px solid #2a3550; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:#1a2540; color:#7888aa; transition:all 0.15s;">☀️ Light</button>
-      <button id="btn-theme-system" data-theme-set="system" style="cursor:pointer; border:1px solid #2a3550; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; background:#1a2540; color:#7888aa; transition:all 0.15s;">💻 System</button>
-    </div>
-
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:11px;color:#6b8099;font-weight:500;">Theme:</span>
   </div>
 </div>
 """)
-        # Hidden radio — kept for the theme_radio.change() wiring below
-        with gr.Row(visible=False):
-            theme_radio = gr.Radio(
-                choices=["🌙 Dark", "☀️ Light", "💻 System"],
-                value="🌙 Dark",
-                label="",
-                interactive=True,
-                elem_classes="theme-radio",
-            )
-
         # ── Config State (shared across all tabs) ──
         cfg_state = gr.State({
             "api_key":     "",
@@ -1424,6 +1392,36 @@ def build_app():
             outputs=[cfg_state],
         )
 
+        # ── Theme buttons ──
+        with gr.Row(elem_classes="theme-bar"):
+            theme_dark_btn   = gr.Button("🌙 Dark",   variant="secondary", size="sm", elem_classes="theme-btn theme-btn-dark")
+            theme_light_btn  = gr.Button("☀️ Light",  variant="secondary", size="sm", elem_classes="theme-btn theme-btn-light")
+            theme_system_btn = gr.Button("💻 System", variant="secondary", size="sm", elem_classes="theme-btn theme-btn-system")
+
+        def _theme_js(name):
+            return f"""() => {{
+                var t = '{name}';
+                var resolved = t === 'system'
+                    ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : t;
+                document.documentElement.setAttribute('data-theme', resolved);
+                localStorage.setItem('ai-agent-theme', t);
+                document.querySelectorAll('.theme-btn button').forEach(function(b) {{
+                    b.style.background = 'var(--bg-elevated)';
+                    b.style.color = 'var(--text-muted)';
+                    b.style.borderColor = 'var(--border)';
+                }});
+                var active = document.querySelector('.theme-btn-' + t + ' button');
+                if (active) {{
+                    active.style.background = 'var(--btn-primary)';
+                    active.style.color = '#ffffff';
+                    active.style.borderColor = 'var(--btn-primary)';
+                }}
+            }}"""
+
+        theme_dark_btn.click(fn=None,   js=_theme_js("dark"))
+        theme_light_btn.click(fn=None,  js=_theme_js("light"))
+        theme_system_btn.click(fn=None, js=_theme_js("system"))
+
         # ── Exercise Tabs ──
         with gr.Tabs():
             with gr.Tab("01 · Simple Agent"):
@@ -1449,20 +1447,6 @@ def build_app():
   <a href="https://github.com/skalmodiya/ai-agent-learning" style="color:var(--accent-blue); text-decoration:none; font-weight:600;">GitHub ↗</a>
 </div>
 """)
-
-        # ── Theme switcher logic ──
-        # When the Radio changes, run JS to update data-theme on <html>
-        theme_radio.change(
-            fn=None,
-            inputs=theme_radio,
-            js="""(theme) => {
-                const resolved = (theme === '💻 System')
-                    ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
-                    : (theme === '☀️ Light' ? 'light' : 'dark');
-                document.documentElement.setAttribute('data-theme', resolved);
-                localStorage.setItem('ai-agent-theme', theme);
-            }""",
-        )
 
     return app
 
