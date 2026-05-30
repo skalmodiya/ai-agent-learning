@@ -882,19 +882,31 @@ def animate_flow(steps: list, active_idx: int) -> str:
     def label(key: str) -> str:
         return key.replace("_", " ").title()
 
+    def summary(text: str) -> str:
+        """Extract the short **Step N:** description line from step text."""
+        for line in text.split("\n"):
+            line = line.strip()
+            if line.startswith("**Step") or line.startswith("**Done"):
+                return f"<span style='font-size:11.5px;color:var(--text-muted);'>{line}</span>"
+        # fallback: first non-empty, non-code line
+        for line in text.split("\n"):
+            line = line.strip()
+            if line and not line.startswith("```") and not line.startswith("#"):
+                return f"<span style='font-size:11.5px;color:var(--text-muted);'>{line[:100]}</span>"
+        return ""
+
     sections = []
     for i, (key, text) in enumerate(steps):
         is_idle = (i == 0 and key in ("idle", "waiting", "start"))
 
         if is_idle:
             if active_idx == 0:
-                # Show the idle diagram before anything starts
                 sections.append(f"*Waiting for your message...*\n\n{text}")
-            # skip idle step once processing begins
             continue
 
         if i < active_idx:
-            sections.append(f"✅ &nbsp;**{label(key)}**")
+            hint = summary(text)
+            sections.append(f"✅ &nbsp;**{label(key)}**" + (f"\n{hint}" if hint else ""))
         elif i == active_idx:
             sections.append(f"**▶ {label(key)}**\n\n{text}")
         else:
