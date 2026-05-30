@@ -839,9 +839,11 @@ def build_ex01_tab(cfg_state):
             yield history, s, "⏱ Error", None, animate_flow(ex01_simple.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state, cfg_state],
-                   [chatbot, state, latency, raw_json, flow_display])
+                   [chatbot, state, latency, raw_json, flow_display]).then(
+                   lambda: gr.update(value=""), outputs=msg_input)
     msg_input.submit(respond, [msg_input, chatbot, state, cfg_state],
-                     [chatbot, state, latency, raw_json, flow_display])
+                     [chatbot, state, latency, raw_json, flow_display]).then(
+                     lambda: gr.update(value=""), outputs=msg_input)
     clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", None, animate_flow(ex01_simple.FLOW_STEPS, 0)),
                     outputs=[chatbot, state, latency, raw_json, flow_display])
 
@@ -897,9 +899,11 @@ def build_ex02_tab(cfg_state):
             yield history, s, "⏱ Error", f"💬 Turns: {len(s['history'])//2}", animate_flow(ex02_memory.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state, persona_input, cfg_state],
-                   [chatbot, state, latency, turn_count, flow_display])
+                   [chatbot, state, latency, turn_count, flow_display]).then(
+                   lambda: gr.update(value=""), outputs=msg_input)
     msg_input.submit(respond, [msg_input, chatbot, state, persona_input, cfg_state],
-                     [chatbot, state, latency, turn_count, flow_display])
+                     [chatbot, state, latency, turn_count, flow_display]).then(
+                     lambda: gr.update(value=""), outputs=msg_input)
     clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", "💬 Turns: 0", animate_flow(ex02_memory.FLOW_STEPS, 0)),
                     outputs=[chatbot, state, latency, turn_count, flow_display])
 
@@ -959,9 +963,11 @@ def build_ex03_tab(cfg_state):
             yield history, s, "⏱ Error", [], animate_flow(ex03_tools.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state, cfg_state],
-                   [chatbot, state, latency, tool_log, flow_display])
+                   [chatbot, state, latency, tool_log, flow_display]).then(
+                   lambda: gr.update(value=""), outputs=msg_input)
     msg_input.submit(respond, [msg_input, chatbot, state, cfg_state],
-                     [chatbot, state, latency, tool_log, flow_display])
+                     [chatbot, state, latency, tool_log, flow_display]).then(
+                     lambda: gr.update(value=""), outputs=msg_input)
     clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", [], animate_flow(ex03_tools.FLOW_STEPS, 0)),
                     outputs=[chatbot, state, latency, tool_log, flow_display])
 
@@ -1013,8 +1019,10 @@ def build_ex04_tab(cfg_state):
         except Exception as e:
             yield f"❌ Error: {e}", "⏱ Error", animate_flow(ex04_react.FLOW_STEPS, 0)
 
-    send_btn.click(respond, [msg_input, cfg_state], [trace_box, latency, flow_display])
-    msg_input.submit(respond, [msg_input, cfg_state], [trace_box, latency, flow_display])
+    send_btn.click(respond, [msg_input, cfg_state], [trace_box, latency, flow_display]).then(
+                   lambda: gr.update(value=""), outputs=msg_input)
+    msg_input.submit(respond, [msg_input, cfg_state], [trace_box, latency, flow_display]).then(
+                     lambda: gr.update(value=""), outputs=msg_input)
 
 
 def build_ex05_tab(cfg_state):
@@ -1061,8 +1069,10 @@ def build_ex05_tab(cfg_state):
         except Exception as e:
             yield f"❌ Error: {e}", "", "⏱ Error", animate_flow(ex05_multi_agent.FLOW_STEPS, 0)
 
-    send_btn.click(respond, [msg_input, cfg_state], [planner_box, writer_box, latency, flow_display])
-    msg_input.submit(respond, [msg_input, cfg_state], [planner_box, writer_box, latency, flow_display])
+    send_btn.click(respond, [msg_input, cfg_state], [planner_box, writer_box, latency, flow_display]).then(
+                   lambda: gr.update(value=""), outputs=msg_input)
+    msg_input.submit(respond, [msg_input, cfg_state], [planner_box, writer_box, latency, flow_display]).then(
+                     lambda: gr.update(value=""), outputs=msg_input)
 
 
 def build_ex06_tab(cfg_state):
@@ -1132,9 +1142,11 @@ def build_ex06_tab(cfg_state):
             yield err_history, s, "⏱ Error", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state, cfg_state],
-                   [chatbot, state, latency, chunk_count, flow_display])
+                   [chatbot, state, latency, chunk_count, flow_display]).then(
+                   lambda: gr.update(value=""), outputs=msg_input)
     msg_input.submit(respond, [msg_input, chatbot, state, cfg_state],
-                     [chatbot, state, latency, chunk_count, flow_display])
+                     [chatbot, state, latency, chunk_count, flow_display]).then(
+                     lambda: gr.update(value=""), outputs=msg_input)
     clear_btn.click(lambda: ([], {"history": []}, "⏱ Latency: —", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 0)),
                     outputs=[chatbot, state, latency, chunk_count, flow_display])
 
@@ -1208,10 +1220,12 @@ def build_ex07_tab(cfg_state):
 
     send_btn.click(respond, [msg_input, cfg_state],
                    [latency, summary_box, sentiment_box, score_box,
-                    keywords_box, pros_box, cons_box, raw_json, flow_display])
+                    keywords_box, pros_box, cons_box, raw_json, flow_display]).then(
+                   lambda: gr.update(value=""), outputs=msg_input)
     msg_input.submit(respond, [msg_input, cfg_state],
                      [latency, summary_box, sentiment_box, score_box,
-                      keywords_box, pros_box, cons_box, raw_json, flow_display])
+                      keywords_box, pros_box, cons_box, raw_json, flow_display]).then(
+                     lambda: gr.update(value=""), outputs=msg_input)
 
 
 def build_ex08_tab(cfg_state):
@@ -1264,9 +1278,11 @@ def build_ex08_tab(cfg_state):
             yield history, "⏱ Error", "_Error_", animate_flow(ex08_rag.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, cfg_state],
-                   [chatbot, latency, sources_box, flow_display])
+                   [chatbot, latency, sources_box, flow_display]).then(
+                   lambda: gr.update(value=""), outputs=msg_input)
     msg_input.submit(respond, [msg_input, chatbot, cfg_state],
-                     [chatbot, latency, sources_box, flow_display])
+                     [chatbot, latency, sources_box, flow_display]).then(
+                     lambda: gr.update(value=""), outputs=msg_input)
     clear_btn.click(lambda: ([], "⏱ Latency: —", "_..._", animate_flow(ex08_rag.FLOW_STEPS, 0)),
                     outputs=[chatbot, latency, sources_box, flow_display])
 
