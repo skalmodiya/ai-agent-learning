@@ -148,7 +148,7 @@ def build_ex01_tab():
         # ── Panel 2: Try It ──
         with gr.Column(scale=4, elem_classes="panel-card"):
             gr.Markdown("### ▶ Try It Live", elem_classes="section-label")
-            chatbot   = gr.Chatbot(height=360, label="", show_label=False, type="messages")
+            chatbot   = gr.Chatbot(height=360, label="", show_label=False)
             msg_input = gr.Textbox(placeholder="Type a message...", show_label=False, lines=1)
             with gr.Row():
                 send_btn  = gr.Button("Send", variant="primary", elem_classes="send-btn")
@@ -181,14 +181,12 @@ def build_ex01_tab():
             yield history, s, "⏱ Parsing...", None, animate_flow(ex01_simple.FLOW_STEPS, 4)
             time.sleep(0.2)
 
-            history = history + [{"role": "user", "content": message},
-                                  {"role": "assistant", "content": result["reply"]}]
+            history = history + [[message, result["reply"]]]
             yield (history, s, f"⏱ Latency: {result['latency']}s",
                    {"request": result["request"], "response": result["response"]},
                    animate_flow(ex01_simple.FLOW_STEPS, 5))
         except Exception as e:
-            history = history + [{"role": "user", "content": message},
-                                  {"role": "assistant", "content": f"❌ Error: {e}"}]
+            history = history + [[message, f"❌ Error: {e}"]]
             yield history, s, "⏱ Error", None, animate_flow(ex01_simple.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state],
@@ -214,7 +212,7 @@ def build_ex02_tab():
                 label="System Prompt (persona) — edit me!",
                 lines=2,
             )
-            chatbot   = gr.Chatbot(height=300, label="", show_label=False, type="messages")
+            chatbot   = gr.Chatbot(height=300, label="", show_label=False)
             msg_input = gr.Textbox(placeholder="Type a message...", show_label=False, lines=1)
             with gr.Row():
                 send_btn  = gr.Button("Send", variant="primary", elem_classes="send-btn")
@@ -241,14 +239,12 @@ def build_ex02_tab():
             result = ex02_memory.run(message, s["history"], persona)
             s["history"] = result["history"]
 
-            history = history + [{"role": "user", "content": message},
-                                  {"role": "assistant", "content": result["reply"]}]
+            history = history + [[message, result["reply"]]]
             yield (history, s, f"⏱ Latency: {result['latency']}s",
                    f"💬 Turns: {len(s['history'])//2}",
                    animate_flow(ex02_memory.FLOW_STEPS, 5))
         except Exception as e:
-            history = history + [{"role": "user", "content": message},
-                                  {"role": "assistant", "content": f"❌ Error: {e}"}]
+            history = history + [[message, f"❌ Error: {e}"]]
             yield history, s, "⏱ Error", f"💬 Turns: {len(s['history'])//2}", animate_flow(ex02_memory.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state, persona_input],
@@ -269,7 +265,7 @@ def build_ex03_tab():
 
         with gr.Column(scale=4, elem_classes="panel-card"):
             gr.Markdown("### ▶ Try It Live", elem_classes="section-label")
-            chatbot   = gr.Chatbot(height=320, label="", show_label=False, type="messages")
+            chatbot   = gr.Chatbot(height=320, label="", show_label=False)
             msg_input = gr.Textbox(
                 placeholder="Try: 'What is 1234 * 5678?' or 'Weather in Tokyo?'",
                 show_label=False, lines=1
@@ -306,13 +302,11 @@ def build_ex03_tab():
                 yield history, s, "⏱ Feeding result back...", result["tool_calls"], animate_flow(ex03_tools.FLOW_STEPS, 5)
                 time.sleep(0.3)
 
-            history = history + [{"role": "user", "content": message},
-                                  {"role": "assistant", "content": result["reply"]}]
+            history = history + [[message, result["reply"]]]
             yield (history, s, f"⏱ Latency: {result['latency']}s",
                    result["tool_calls"], animate_flow(ex03_tools.FLOW_STEPS, 6))
         except Exception as e:
-            history = history + [{"role": "user", "content": message},
-                                  {"role": "assistant", "content": f"❌ Error: {e}"}]
+            history = history + [[message, f"❌ Error: {e}"]]
             yield history, s, "⏱ Error", [], animate_flow(ex03_tools.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state],
@@ -434,7 +428,7 @@ def build_ex06_tab():
             gr.Markdown("### ▶ Try It Live", elem_classes="section-label")
             gr.Markdown("_Watch tokens arrive one by one — the reply builds in real time._",
                         elem_classes="section-label")
-            chatbot   = gr.Chatbot(height=320, label="", show_label=False, type="messages")
+            chatbot   = gr.Chatbot(height=320, label="", show_label=False)
             msg_input = gr.Textbox(placeholder="Type a message...", show_label=False, lines=1)
             with gr.Row():
                 send_btn  = gr.Button("Send", variant="primary", elem_classes="send-btn")
@@ -452,7 +446,6 @@ def build_ex06_tab():
     def respond(message, history, s):
         if not message.strip():
             return history, s, "⏱ Latency: —", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 0)
-        history = history + [{"role": "user", "content": message}]
         yield history, s, "⏱ Connecting...", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 1)
         time.sleep(0.2)
         yield history, s, "⏱ Streaming...", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 2)
@@ -461,11 +454,11 @@ def build_ex06_tab():
             t0 = time.time()
             accumulated = ""
             chunk_n = 0
-            # Stream tokens into the chatbot live
+            # Stream tokens into the chatbot live using [user, partial_bot] tuples
             for chunk in ex06_streaming.run_stream(message, s["history"]):
                 accumulated += chunk
                 chunk_n += 1
-                current_history = history + [{"role": "assistant", "content": accumulated}]
+                current_history = history + [[message, accumulated]]
                 yield (current_history, s,
                        f"⏱ Streaming... {round(time.time()-t0,1)}s",
                        f"📦 Chunks: {chunk_n}",
@@ -474,13 +467,13 @@ def build_ex06_tab():
             elapsed = round(time.time() - t0, 2)
             s["history"] += [{"role":"user","content":message},
                               {"role":"assistant","content":accumulated}]
-            final_history = history + [{"role": "assistant", "content": accumulated}]
+            final_history = history + [[message, accumulated]]
             yield (final_history, s,
                    f"⏱ Latency: {elapsed}s",
                    f"📦 Chunks: {chunk_n}",
                    animate_flow(ex06_streaming.FLOW_STEPS, 4))
         except Exception as e:
-            err_history = history + [{"role": "assistant", "content": f"❌ Error: {e}"}]
+            err_history = history + [[message, f"❌ Error: {e}"]]
             yield err_history, s, "⏱ Error", "📦 Chunks: 0", animate_flow(ex06_streaming.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot, state],
@@ -578,7 +571,7 @@ def build_ex08_tab():
 
         with gr.Column(scale=4, elem_classes="panel-card"):
             gr.Markdown("### ▶ Try It Live", elem_classes="section-label")
-            chatbot   = gr.Chatbot(height=300, label="", show_label=False, type="messages")
+            chatbot   = gr.Chatbot(height=300, label="", show_label=False)
             msg_input = gr.Textbox(
                 placeholder="Try: 'How many leave days do I get?'",
                 show_label=False, lines=1
@@ -607,14 +600,12 @@ def build_ex08_tab():
         yield history, "⏱ AI generating...", "_Generating grounded answer..._", animate_flow(ex08_rag.FLOW_STEPS, 4)
         try:
             result = ex08_rag.run(message)
-            history = history + [{"role": "user", "content": message},
-                                  {"role": "assistant", "content": result["reply"]}]
+            history = history + [[message, result["reply"]]]
             sources_md = "**Retrieved:** " + " · ".join(f"`{s}`" for s in result["sources"])
             yield (history, f"⏱ Latency: {result['latency']}s",
                    sources_md, animate_flow(ex08_rag.FLOW_STEPS, 5))
         except Exception as e:
-            history = history + [{"role": "user", "content": message},
-                                  {"role": "assistant", "content": f"❌ Error: {e}"}]
+            history = history + [[message, f"❌ Error: {e}"]]
             yield history, "⏱ Error", "_Error_", animate_flow(ex08_rag.FLOW_STEPS, 0)
 
     send_btn.click(respond, [msg_input, chatbot],
@@ -630,15 +621,7 @@ def build_ex08_tab():
 # ─────────────────────────────────────────────
 
 def build_app():
-    with gr.Blocks(
-        title="AI Agent Learning Platform",
-        css=CSS,
-        theme=gr.themes.Base(
-            primary_hue="blue",
-            neutral_hue="slate",
-            font=gr.themes.GoogleFont("Inter"),
-        ),
-    ) as app:
+    with gr.Blocks(title="AI Agent Learning Platform") as app:
 
         gr.Markdown("""
 # 🤖 AI Agent Learning Platform
@@ -681,4 +664,10 @@ if __name__ == "__main__":
         server_port=7860,
         share=False,
         show_error=True,
+        css=CSS,
+        theme=gr.themes.Base(
+            primary_hue="blue",
+            neutral_hue="slate",
+            font=gr.themes.GoogleFont("Inter"),
+        ),
     )
